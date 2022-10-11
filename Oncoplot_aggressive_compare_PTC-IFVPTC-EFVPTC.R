@@ -7,16 +7,15 @@
 #### Table of Contents ####
 # 1. Load packages
 # 2. Read maf file
-# 3. Change clinical data of interest to numerics -> this allows for them to be plotted as numerics
-# 4. Subset maf to samples of interest
-# 5. Use maf tools to print a matrix to feed into ComplexHeatmap's oncoprint function
-# 6. Read in Oncoplot Matrix generated with maftools
-# 7. Format and subset Oncoplot Matrix and Clinical Data
-# 8. Add in fusion data to Oncoplot Data
-# 9. Make Diagnosis into a numerical variable for sorting
-# 10. Formatting mutation grid of ComplexHeatmap oncoPrint plot
-# 11. Formatting ComplexHeatmap annotations
-# 12. Make the ComplexHeatmap with oncoPrint
+# 3. Subset maf to samples of interest
+# 4. Use maf tools to print a matrix to feed into ComplexHeatmap's oncoprint function
+# 5. Read in Oncoplot Matrix generated with maftools
+# 6. Format and subset Oncoplot Matrix and Clinical Data
+# 7. Add in fusion data to Oncoplot Data
+# 8. Make Diagnosis into a numerical variable for sorting
+# 9. Formatting mutation grid of ComplexHeatmap oncoPrint plot
+# 10. Formatting ComplexHeatmap annotations
+# 11. Make the ComplexHeatmap with oncoPrint
 
 #ComplexHeatmap install may require XQuartz installation
 
@@ -27,7 +26,7 @@ library(ComplexHeatmap)
 library(circlize) # R package for making gradient heatmap annotations
 
 # Set your working directory
-setwd("/Users/georgexu/Dropbox/Vanderbilt\ Grad\ School/Lab/Projects/Data/DNA\ seq\ processing/Analysis\ of\ Tiger\ Mutect2\ data/9-28-22\ -\ All\ Oncoplots")
+setwd("_")
 
 #### 2. Read in Data ####
 # read maf file
@@ -44,48 +43,10 @@ Clinical_Data <- Clinical_Data %>% subset(Diagnosis != "normal")
 #Clinical_Data <- Clinical_Data %>% subset(Aggressive.disease == "Indolent")
 Clinical_Data <- Clinical_Data %>% subset(Aggressive.disease == "Aggressive")
 
-#### 3. Change clinical data to numerics ####
-### Some of the variables need to be numerics to generate gradients in the oncoplot ###
-# Change age at resection to numeric
-Age.resection.integer <- as.numeric(Clinical_Data$Age.resection)
-Clinical_Data$Age.resection <- Age.resection.integer
-
-# Change ERK Score variable to numeric
-ERK_Score_numeric <- as.numeric(Clinical_Data$ERK)
-Clinical_Data$ERK <- ERK_Score_numeric
-
-# Change BRS variable as numeri
-BRS_numeric <- as.numeric(Clinical_Data$BRS)
-Clinical_Data$BRS <- BRS_numeric
-
-# Change TDS variable to numeric
-TDS_numeric <- as.numeric(Clinical_Data$TDS)
-Clinical_Data$TDS <- TDS_numeric
-
-# Change PI3K_AKT_MTOR variable to numeric
-PI3K_AKT_MTOR_numeric <- as.numeric(Clinical_Data$PI3K_AKT_MTOR)
-Clinical_Data$PI3K_AKT_MTOR <- PI3K_AKT_MTOR_numeric
-
-# If you add the Wnt scores to the file, they should also be changed to a numeric
-# Change each Wnt variable to numeric
-WNT_numeric <- as.numeric(Clinical_Data$WNT)
-Clinical_Data$WNT <- WNT_numeric
-Wnt_Canon_numeric <- as.numeric(Clinical_Data$WNT_Canon)
-Clinical_Data$WNT_Canon <- Wnt_Canon_numeric
-WNT_NonCanon_numeric <- as.numeric(Clinical_Data$WNT_NonCanon)
-Clinical_Data$WNT_NonCanon <- WNT_NonCanon_numeric
-
-# If you add CAF scores to the file, they should also be changed to a numeric
-# Change CAF variables to numeric
-EPIC_CAF_numeric <- as.numeric(Clinical_Data$Cancer.associated.fibroblast_EPIC)
-Clinical_Data$Cancer.associated.fibroblast_EPIC <- EPIC_CAF_numeric
-MCPCOUNTER_CAF_numeric <- as.numeric(Clinical_Data$Cancer.associated.fibroblast_MCPCOUNTER)
-Clinical_Data$Cancer.associated.fibroblast_MCPCOUNTER <- MCPCOUNTER_CAF_numeric
-
 # Needs to be in vector format for oncoplot
 Clinical_Data <- as.data.frame(Clinical_Data)
 
-#### 4. Subset maf to samples of interest ####
+#### 3. Subset maf to samples of interest ####
 #Non-metastatic only, comment out if want to include all samples
 Clinical_Data <- Clinical_Data %>% subset(Location.type == "Primary" | Location.type == "Localdisease")
 
@@ -94,7 +55,7 @@ Clinical_Data <- Clinical_Data %>% subset(Diagnosis == "PTC" | Diagnosis == "IFV
 
 maf_thyroidorigin = subsetMaf(maf = maf, tsb = c(Clinical_Data$Tumor_Sample_Barcode), mafObj = TRUE)
 
-#### 5. Use MAF tools to print a Matrix to feed into ComplexHeatmap's oncoPrint function ####
+#### 4. Use MAF tools to print a Matrix to feed into ComplexHeatmap's oncoPrint function ####
 oncoplot(maf = maf_thyroidorigin, top = 20, annotationDat = Clinical_Data, # top = set the number of genes to look at, annotationDat = data for annotations
          clinicalFeatures = c("Diagnosis", # Annotation features to show at bottom
                               "Sex",
@@ -106,10 +67,10 @@ oncoplot(maf = maf_thyroidorigin, top = 20, annotationDat = Clinical_Data, # top
          numericAnnoCol = NULL, # This is for changing the color of annotation gradients...I couldn't get it to work in maf tools though
          writeMatrix = TRUE) # This is the most important step -> I will use writeMatrix as input for the complex heatmap package
 
-#### 6. Read in Oncoplot Matrix generated with maftools ####
+#### 5. Read in Oncoplot Matrix generated with maftools ####
 Oncoplot_Data <- as.matrix(read.table(file = "onco_matrix.txt", sep = '\t', header = TRUE))
 
-#### 7. Format and subset Oncoplot Matrix and Clinical Data ####
+#### 6. Format and subset Oncoplot Matrix and Clinical Data ####
 Sample_Names <- colnames(Oncoplot_Data) # Create a variable "Sample_Names" that contains a list of the samples in the OncoPlot Matrix
 Clinical_Data_Oncoplot_Restricted <- Clinical_Data %>% subset(Tumor_Sample_Barcode %in% c(Sample_Names)) # restrict clinical data to the samples in the OncoPlot matrix
 rownames(Clinical_Data_Oncoplot_Restricted) <- Clinical_Data_Oncoplot_Restricted$Tumor_Sample_Barcode # Assign row names as the tumor sample barcode
@@ -127,7 +88,7 @@ for(y in 1:nrow(Oncoplot_Data)){
   }
 }
 
-#### 8. Add in fusion data to Oncoplot_Data ####
+#### 7. Add in fusion data to Oncoplot_Data ####
 # Note: can do similar for CNV data if desired
 # MET fusions
 Oncoplot_Data_Fusions_Included <- Oncoplot_Data # make a new matrix of Oncoplot_Data with fusions_included designated
@@ -209,7 +170,7 @@ for(y in 1:nrow(Oncoplot_Data_Fusions_Included)){
   }
 }
 
-#### 9. Make Diagnosis into a numerical variable for sorting ####
+#### 8. Make Diagnosis into a numerical variable for sorting ####
 # For sorting purposes
 # The Diagnosis that you want on the left should be 1
 Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting <- 0
@@ -229,7 +190,7 @@ for(i in 1:nrow(Clinical_Data_Oncoplot_Restricted)){
 test <- rownames(Clinical_Data_Oncoplot_Restricted) == colnames(Oncoplot_Data) # must be same order for annotations to work
 test
 
-#### 10. Formatting mutation grid of ComplexHeatmap oncoPrint plot ####
+#### 9. Formatting mutation grid of ComplexHeatmap oncoPrint plot ####
 
 ### Choosing colors for mutations ###
 col = c("In_Frame_Del" = "gold1",             # Change IN_Frame_Del color
@@ -300,7 +261,7 @@ column_title = "Oncoplot" # Change to include desired title name
 heatmap_legend_param = list(title = "Alterations", at = c("In_Frame_Del", "Nonsense_Mutation", "Missense_Mutation", "Frame_Shift_Ins", "Frame_Shift_Del", "Splice_Site", "Multi_Hit", "Fusion"),
                             labels = c("In Frame Deletion", "Nonsense Mutation", "Missense Mutation", "Frame Shift Insertion", "Frame Shift Deletion", "Splice Site or Promoter", "Multi Hit", "Fusions"))
 
-#### 11. Formatting ComplexHeatmap Annotations ####
+#### 10. Formatting ComplexHeatmap Annotations ####
 
 ### Annotation color gradients
 BRS_Color <- colorRamp2(c(-0.8, 0, .8), c("red", "mediumorchid3", "blue")) # old color combo that I liked
@@ -352,7 +313,7 @@ HA_Left = rowAnnotation(foo = anno_block(gp = gpar(fill = c("mediumspringgreen",
                                                    labels = c("Mutations", "Fusions"),
                                                    labels_gp = gpar(col = "black", fontsize = 12, fontface = "bold")))
 
-#### 12. Make the ComplexHeatmap plot with oncoPrint ####
+#### 11. Make the ComplexHeatmap plot with oncoPrint ####
 
 #png(filename="PTC-FVPTC_Indolent.png",
 png(filename="PTC-FVPTC_Aggressive.png",
