@@ -28,7 +28,7 @@ library(circlize)
 ###### II. Differential Gene Expression Analysis and VSD Creation ######
 
 # Set directory
-setwd("/Users/georgexu/Dropbox/Vanderbilt\ Grad\ School/Lab/Projects/Data/RNA\ seq\ processing/9-30-22\ -\ Gene\ expression\ heatmaps/9-30-22\ -\ ERK\ gene\ heatmap\ with\ mets\ and\ HTPTC\ using\ ComplexHeatmap")
+setwd("_")
 
 # Load protein coding count table
 count.df.master=fread("weiss_human_wnt.proteincoding.count_diag_order_final_withmets_and_HTPTC_9-30-22.txt", header=TRUE, sep="\t")

@@ -3,7 +3,7 @@
 library(ComplexHeatmap)
 
 
-setwd("/Users/georgexu/Dropbox/Vanderbilt\ Grad\ School/Lab/Projects/Data/Immune\ Clustering/9-30-22\ -\ immune\ heatmap\ with\ mets\ added\ -\ HTPTC\ included")
+setwd("_")
 data = read.csv("6_TIMER_and_2_CAFs_with_cibersort_and_TIDE_include_mets_and_HTPTC.csv", header = TRUE)
 annot = read.csv("annotation_data_9-30-22_include_mets_and_HTPTC.csv", header = TRUE)
 #don't forget to remove first column's header before loading into R

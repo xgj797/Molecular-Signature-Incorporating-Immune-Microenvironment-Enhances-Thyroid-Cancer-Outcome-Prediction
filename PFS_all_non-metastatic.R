@@ -9,7 +9,7 @@ library(tidyverse)
 library(cowplot)
 
 # Set your working directory
-setwd("/Users/georgexu/Dropbox/Vanderbilt\ Grad\ School/Lab/Projects/Tumor\ aggression\ project\ with\ Fei/PFS_Code_9-9-22")
+setwd("_")
 
 
 # Load Data

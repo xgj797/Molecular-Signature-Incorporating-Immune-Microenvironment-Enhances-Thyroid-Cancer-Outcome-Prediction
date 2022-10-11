@@ -3,7 +3,7 @@
 library(ComplexHeatmap)
 
 
-setwd("/Users/georgexu/Dropbox/Vanderbilt\ Grad\ School/Lab/Projects/Data/Immune\ Clustering/6-6-22\ -\ immune\ heatmap\ with\ TCGA\ data")
+setwd("_")
 data = read.csv("TCGA_data.csv", header = TRUE)
 annot = read.csv("TCGA_annotation_data.csv", header = TRUE)
 #don't forget to remove first column's header before loading into R, make sure no extra comma at end of first row
