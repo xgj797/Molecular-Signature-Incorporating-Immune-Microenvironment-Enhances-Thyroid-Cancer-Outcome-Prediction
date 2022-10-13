@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=1:00:00
+#SBATCH --mem=22G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/log/P1896_AC_17_o2o.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/result/P1896_AC_17.coverage.txt ) || ( -d /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/result/P1896_AC_17.coverage.txt ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/result/P1896_AC_17.coverage.txt and submit job again.
+    exit 0
+  fi
+fi
+
+echo CQS::ProgramWrapperOneToOne_start=`date`
+echo working in /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -e -H /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/result  -B `pwd` -B /home  /data/cqs/softwares/singularity/mosdepth.0.2.4.sif bash /scratch/weissvl/shengq2/20210616_human_exomeseq/bam_coverage/pbs/P1896_AC_17_o2o.pbs.sh 
+
+echo CQS::ProgramWrapperOneToOne_end=`date`
+
+exit 0
+

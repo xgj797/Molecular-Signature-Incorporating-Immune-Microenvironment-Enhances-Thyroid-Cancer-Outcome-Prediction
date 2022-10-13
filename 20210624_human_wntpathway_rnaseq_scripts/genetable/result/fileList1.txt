@@ -1,0 +1,2 @@
+/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/genetable/result/weiss_human_wnt.count	weiss_human_wnt
+/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/genetable/result/weiss_human_wnt.proteincoding.count	weiss_human_wnt

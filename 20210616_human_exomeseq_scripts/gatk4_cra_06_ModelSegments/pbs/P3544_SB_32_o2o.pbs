@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=10:00:00
+#SBATCH --mem=44G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/log/P3544_SB_32_o2o.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/result/P3544_SB_32'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s /scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/result/P3544_SB_32/P3544_SB_32.modelFinal.seg ) || ( -d /scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/result/P3544_SB_32/P3544_SB_32.modelFinal.seg ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/result/P3544_SB_32/P3544_SB_32.modelFinal.seg and submit job again.
+    exit 0
+  fi
+fi
+
+echo CQS::ProgramWrapperOneToOne_start=`date`
+echo working in /scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/result/P3544_SB_32 ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-gatk4.simg  bash /scratch/weissvl/shengq2/20210616_human_exomeseq/gatk4_cra_06_ModelSegments/pbs/P3544_SB_32_o2o.pbs.sh 
+
+echo CQS::ProgramWrapperOneToOne_end=`date`
+
+exit 0
+

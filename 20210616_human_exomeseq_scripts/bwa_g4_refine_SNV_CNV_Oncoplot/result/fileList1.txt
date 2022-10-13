@@ -1,0 +1,4 @@
+/scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result/human_exomeseq.freq0.001.snv.missense.oncoprint.tsv	human_exomeseq
+/scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result/human_exomeseq.freq0.01.snv.missense.oncoprint.tsv	human_exomeseq
+/scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result/human_exomeseq.freq0.1.snv.missense.oncoprint.tsv	human_exomeseq
+/scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result/human_exomeseq.freq1.0.snv.missense.oncoprint.tsv	human_exomeseq

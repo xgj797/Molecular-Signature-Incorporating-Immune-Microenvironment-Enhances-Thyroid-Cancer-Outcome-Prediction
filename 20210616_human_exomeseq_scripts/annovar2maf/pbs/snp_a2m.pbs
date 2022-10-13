@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=1:00:00
+#SBATCH --mem=11G
+#SBATCH -o /workspace/shengq2/vivian_weiss/20210616_human_exomeseq/annovar2maf/log/snp_a2m.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/workspace/shengq2/vivian_weiss/20210616_human_exomeseq/annovar2maf/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s WES_7633_JN.freq0.001.filtered.missense.tsv.maf ) || ( -d WES_7633_JN.freq0.001.filtered.missense.tsv.maf ) ]]; then
+    echo job has already been done. if you want to do again, delete /workspace/shengq2/vivian_weiss/20210616_human_exomeseq/annovar2maf/result/WES_7633_JN.freq0.001.filtered.missense.tsv.maf and submit job again.
+    exit 0
+  fi
+fi
+
+echo Annotation::Annovar2Maf_start=`date`
+echo working in /workspace/shengq2/vivian_weiss/20210616_human_exomeseq/annovar2maf/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -e -H /workspace/shengq2/vivian_weiss/20210616_human_exomeseq/annovar2maf/result  -c -B /gpfs52,/workspace,/data /data/cqs/softwares/singularity/mafreport.simg  bash /workspace/shengq2/vivian_weiss/20210616_human_exomeseq/annovar2maf/pbs/snp_a2m.pbs.sh 
+
+echo Annotation::Annovar2Maf_end=`date`
+
+exit 0
+

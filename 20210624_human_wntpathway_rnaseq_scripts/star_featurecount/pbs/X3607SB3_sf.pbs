@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --time=23:00:00
+#SBATCH --mem=44G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/star_featurecount/log/X3607SB3_sf.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/star_featurecount/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s X3607SB3.count ) || ( -d X3607SB3.count ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/star_featurecount/result/X3607SB3.count and submit job again.
+    exit 0
+  fi
+fi
+
+echo Alignment::STARFeatureCount_start=`date`
+echo working in /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/star_featurecount/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-rnaseq.simg  bash /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/star_featurecount/pbs/X3607SB3_sf.pbs.sh 
+
+echo Alignment::STARFeatureCount_end=`date`
+
+exit 0
+

@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=10:00:00
+#SBATCH --mem=44G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_CNV_Germline_02_CollectReadCounts/log/P1896_AC_37_crc.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_CNV_Germline_02_CollectReadCounts/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s P1896_AC_37.count.hdf5 ) || ( -d P1896_AC_37.count.hdf5 ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_CNV_Germline_02_CollectReadCounts/result/P1896_AC_37.count.hdf5 and submit job again.
+    exit 0
+  fi
+fi
+
+echo GATK4::CollectReadCounts_start=`date`
+echo working in /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_CNV_Germline_02_CollectReadCounts/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs51,/dors,/gpfs23,/scratch,/gpfs52,/data,/home,/tmp -H `pwd` -e /data/cqs/softwares/singularity/cqs-gatk4.simg  bash /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_CNV_Germline_02_CollectReadCounts/pbs/P1896_AC_37_crc.pbs.sh 
+
+echo GATK4::CollectReadCounts_end=`date`
+
+exit 0
+

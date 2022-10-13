@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=10:00:00
+#SBATCH --mem=11G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/log/human_exomeseq_pw.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s /scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/result/human_exomeseq.filtered.vcf ) || ( -d /scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/result/human_exomeseq.filtered.vcf ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/result/human_exomeseq.filtered.vcf and submit job again.
+    exit 0
+  fi
+fi
+
+echo CQS::ProgramWrapper_start=`date`
+echo working in /scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs51,/dors,/gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-exomeseq.simg  bash /scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_03_filterDepth/pbs/human_exomeseq_pw.pbs.sh 
+
+echo CQS::ProgramWrapper_end=`date`
+
+exit 0
+

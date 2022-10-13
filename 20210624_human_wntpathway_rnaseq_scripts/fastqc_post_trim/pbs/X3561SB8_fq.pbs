@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --ntasks=2
+#SBATCH --time=4:00:00
+#SBATCH --mem=5G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/log/X3561SB8_fq.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8/X3561SB8_clipped.1_fastqc/fastqc_data.txt && -s /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8/X3561SB8_clipped.2_fastqc/fastqc_data.txt ) || ( -d /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8/X3561SB8_clipped.1_fastqc/fastqc_data.txt && -d /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8/X3561SB8_clipped.2_fastqc/fastqc_data.txt ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8/X3561SB8_clipped.1_fastqc/fastqc_data.txt and submit job again.
+    exit 0
+  fi
+fi
+
+if [[ ! -s /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt/result/X3561SB8_clipped.1.fastq.gz ]]; then
+  echo input file not exist: /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt/result/X3561SB8_clipped.1.fastq.gz
+  exit 1
+fi
+
+echo QC::FastQC_start=`date`
+echo working in /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/result/X3561SB8 ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-rnaseq.simg  bash /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/fastqc_post_trim/pbs/X3561SB8_fq.pbs.sh 
+
+echo QC::FastQC_end=`date`
+
+exit 0
+

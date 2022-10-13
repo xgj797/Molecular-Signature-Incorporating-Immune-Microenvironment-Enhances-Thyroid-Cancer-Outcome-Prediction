@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=23:00:00
+#SBATCH --mem=11G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/deseq2_proteincoding_genetable_WebGestalt/log/weiss_human_wnt_wr.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/deseq2_proteincoding_genetable_WebGestalt/result'
+
+
+echo Annotation::WebGestaltR_start=`date`
+echo working in /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/deseq2_proteincoding_genetable_WebGestalt/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-rnaseq.simg  bash /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/deseq2_proteincoding_genetable_WebGestalt/pbs/weiss_human_wnt_wr.pbs.sh 
+
+echo Annotation::WebGestaltR_end=`date`
+
+exit 0
+

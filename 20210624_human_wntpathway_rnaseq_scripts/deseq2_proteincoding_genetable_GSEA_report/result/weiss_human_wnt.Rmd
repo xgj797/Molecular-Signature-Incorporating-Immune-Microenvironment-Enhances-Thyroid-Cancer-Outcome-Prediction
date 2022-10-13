@@ -1,0 +1,38 @@
+---
+title: "GSEA Report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+<style type="text/css">
+    div.datatables { height: auto !important;}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, child="Functions.Rmd"} 
+```
+```{r, child="Pipeline.Rmd"} 
+```
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+library(ggplot2)
+library(RColorBrewer)
+library(reshape2)
+library(DT)
+library(RCurl)
+library(htmltools)
+library(knitr)
+library(kableExtra)
+
+files<-read.table("fileList1.txt", header=FALSE, as.is=TRUE)
+rownames(files)<-files$V2
+```
+ 
+```{r gsea, results="asis", echo=FALSE, warning=FALSE} 
+display_gsea(files)
+``` 

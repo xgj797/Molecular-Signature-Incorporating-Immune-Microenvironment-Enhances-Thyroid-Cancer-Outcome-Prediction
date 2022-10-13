@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=6:00:00
+#SBATCH --mem=11G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/log/X2077AC11_qc.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/result/X2077AC11.txt ) || ( -d /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/result/X2077AC11.txt ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/result/X2077AC11.txt and submit job again.
+    exit 0
+  fi
+fi
+
+echo CQS::ProgramWrapperOneToOne_start=`date`
+echo working in /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-rnaseq.simg  bash /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/cutadapt_validate/pbs/X2077AC11_qc.pbs.sh 
+
+echo CQS::ProgramWrapperOneToOne_end=`date`
+
+exit 0
+

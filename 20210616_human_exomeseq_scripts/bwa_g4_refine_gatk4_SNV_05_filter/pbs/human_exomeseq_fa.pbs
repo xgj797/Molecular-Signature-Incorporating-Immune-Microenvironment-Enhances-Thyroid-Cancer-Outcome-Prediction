@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=2:00:00
+#SBATCH --mem=11G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/log/human_exomeseq_fa.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s human_exomeseq.freq1.0.gene.missense.tsv ) || ( -d human_exomeseq.freq1.0.gene.missense.tsv ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result/human_exomeseq.freq1.0.gene.missense.tsv and submit job again.
+    exit 0
+  fi
+fi
+
+echo Annotation::FilterAnnovar_start=`date`
+echo working in /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs51,/dors,/gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-exomeseq.simg  bash /scratch/weissvl/shengq2/20210616_human_exomeseq/bwa_g4_refine_gatk4_SNV_05_filter/pbs/human_exomeseq_fa.pbs.sh 
+
+echo Annotation::FilterAnnovar_end=`date`
+
+exit 0
+

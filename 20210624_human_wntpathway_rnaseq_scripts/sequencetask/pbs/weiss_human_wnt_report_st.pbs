@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --time=24:00:00
+#SBATCH --mem=44G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/sequencetask/log/weiss_human_wnt_report_st.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/sequencetask/result'
+
+
+echo CQS::SequenceTask_start=`date`
+echo working in /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/sequencetask/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-rnaseq.simg  bash /scratch/weissvl/shengq2/20210624_human_wntpathway_rnaseq/sequencetask/pbs/weiss_human_wnt_report_st.pbs.sh 
+
+echo CQS::SequenceTask_end=`date`
+
+exit 0
+

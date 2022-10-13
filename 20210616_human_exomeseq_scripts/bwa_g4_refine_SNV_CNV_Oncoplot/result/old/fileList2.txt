@@ -1,0 +1,13 @@
+lightgray	BACKGROUND_color
+blue	DEL_color
+0.25	DEL_height
+brown	DUP_color
+0.25	DUP_height
+0	MANUAL_order
+darkgreen	MISSENSE_color
+0.75	MISSENSE_height
+red	TRUNC_color
+0.5	TRUNC_height
+0	picture_height
+0	picture_width
+.	sampleNamePattern

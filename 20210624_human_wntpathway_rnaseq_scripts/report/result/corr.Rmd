@@ -1,0 +1,13 @@
+
+
+### all samples
+
+```{r,echo=FALSE,results='asis', fig.align='center', fig.cap=figRef('all_correlation_heatmap', 'all correlation heatmap using top 25% variant genes', trunk.eval=file.exists(files['all_correlation_heatmap',1]))}
+  check_and_include_graphics(files['all_correlation_heatmap',1])
+```
+```{r,echo=FALSE,results='asis', fig.align='center', fig.cap=figRef('all_correlation_PCA', 'all correlation PCA', trunk.eval=file.exists(files['all_correlation_PCA',1]))}
+  check_and_include_graphics(files['all_correlation_PCA',1])
+```
+```{r,echo=FALSE,results='asis', fig.align='center', fig.cap=figRef('all_correlation_cluster', 'all correlation cluster', trunk.eval=file.exists(files['all_correlation_cluster',1]))}
+  check_and_include_graphics(files['all_correlation_cluster',1])
+```

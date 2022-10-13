@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --mail-user=quanhu.sheng.1@vumc.org
+#SBATCH --mail-type=FAIL
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=2:00:00
+#SBATCH --mem=11G
+#SBATCH --constraint=haswell
+#SBATCH -o /scratch/weissvl/shengq2/20210616_human_exomeseq/fastqc_post_trim_summary/log/human_exomeseq_fqs.log
+
+if [ -n "${SLURM_JOB_ID}" ] ; then
+  smemwatch -k 99 -d 50 $$ &
+fi
+
+
+
+
+
+
+set -o pipefail
+
+cd '/scratch/weissvl/shengq2/20210616_human_exomeseq/fastqc_post_trim_summary/result'
+
+
+if [[ !(1 -eq $1) ]]; then
+  if [[ ( -s human_exomeseq.FastQC.html ) || ( -d human_exomeseq.FastQC.html ) ]]; then
+    echo job has already been done. if you want to do again, delete /scratch/weissvl/shengq2/20210616_human_exomeseq/fastqc_post_trim_summary/result/human_exomeseq.FastQC.html and submit job again.
+    exit 0
+  fi
+fi
+
+echo QC::FastQCSummary_start=`date`
+echo working in /scratch/weissvl/shengq2/20210616_human_exomeseq/fastqc_post_trim_summary/result ...
+ 
+
+export R_LIBS=
+export PYTHONPATH=
+export JAVA_HOME=
+ 
+
+
+singularity exec -c -B /gpfs51,/dors,/gpfs23,/scratch,/gpfs52,/data,/home,/tmp -e /data/cqs/softwares/singularity/cqs-exomeseq.simg  bash /scratch/weissvl/shengq2/20210616_human_exomeseq/fastqc_post_trim_summary/pbs/human_exomeseq_fqs.pbs.sh 
+
+echo QC::FastQCSummary_end=`date`
+
+exit 0
+

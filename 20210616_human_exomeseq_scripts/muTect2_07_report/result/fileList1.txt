@@ -1,0 +1,3 @@
+/scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_06_toMAF/result/human_exomeseq.freq0.001.filtered.tsv.maf	human_exomeseq
+/scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_06_toMAF/result/human_exomeseq.freq0.01.filtered.tsv.maf	human_exomeseq
+/scratch/weissvl/shengq2/20210616_human_exomeseq/muTect2_06_toMAF/result/human_exomeseq.freq0.1.filtered.tsv.maf	human_exomeseq

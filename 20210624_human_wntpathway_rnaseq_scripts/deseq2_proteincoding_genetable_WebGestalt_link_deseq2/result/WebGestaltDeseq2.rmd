@@ -1,0 +1,165 @@
+---
+title: "Gene Enrichment Report"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+params:
+  data: plotData
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+	
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(reshape2)
+library(htmltools)
+
+knitr::opts_chunk$set(echo = TRUE, autodep=TRUE, cache.comments=FALSE, message=FALSE, warning=FALSE, dpi=300)
+
+addLinkTag<-function(text,link) {
+	result<-paste0("<a href='",link,"' target='_blank'>",text,"</a>")
+	return(result)
+}
+
+figRef <- local({
+	tag <- numeric()
+	created <- logical()
+	used <- logical()
+	function(label, caption, prefix = options("figcap.prefix"), 
+			 sep = options("figcap.sep"), prefix.highlight = options("figcap.prefix.highlight"), trunk.eval=TRUE) {
+		if(trunk.eval){ 
+			i <- which(names(tag) == label)
+			if (length(i) == 0) {
+				i <- length(tag) + 1
+				tag <<- c(tag, i)
+				names(tag)[length(tag)] <<- label
+				used <<- c(used, FALSE)
+				names(used)[length(used)] <<- label
+				created <<- c(created, FALSE)
+				names(created)[length(created)] <<- label
+			}
+			if (!missing(caption)) {
+				created[label] <<- TRUE
+				paste0(prefix.highlight, prefix, " ", i, sep, prefix.highlight, 
+					   " ", caption)
+			} else {
+				used[label] <<- TRUE
+				paste(prefix, tag[label])
+			}
+		}
+	}
+})
+options(figcap.prefix = "Figure", figcap.sep = ":", figcap.prefix.highlight = "**")
+
+tabRef <- local({
+	tag <- numeric()
+	created <- logical()
+	used <- logical()
+	function(label, caption, prefix = options("tabcap.prefix"), 
+			 sep = options("tabcap.sep"), prefix.highlight = options("tabcap.prefix.highlight"), trunk.eval=TRUE) {
+		if(trunk.eval){
+			i <- which(names(tag) == label)
+			if (length(i) == 0) {
+				i <- length(tag) + 1
+				tag <<- c(tag, i)
+				names(tag)[length(tag)] <<- label
+				used <<- c(used, FALSE)
+				names(used)[length(used)] <<- label
+				created <<- c(created, FALSE)
+				names(created)[length(created)] <<- label
+			}
+			if (!missing(caption)) {
+				created[label] <<- TRUE
+				paste0(prefix.highlight, prefix, " ", i, sep, prefix.highlight, 
+					   " ", caption)
+			} else {
+				used[label] <<- TRUE
+				paste(prefix, tag[label])
+			}
+		}
+	}
+})
+options(tabcap.prefix = "Table", tabcap.sep = ":", tabcap.prefix.highlight = "**")
+
+updateEnrichedTable<-function(enriched){
+	rowCount<-nrow(enriched)
+
+	enriched$tblShortCaption<-apply(enriched, 1, function(x){tabRef(paste0("enriched ",x["geneSet"]))})
+	enriched$tblLongCaption<-apply(enriched, 1, function(x){tabRef(paste0("enriched ",x["geneSet"]), paste0("Significantly differential expressed genes in ",x["description"]))})
+	enriched$tblLink<-tolower(gsub(' ','', enriched$tblShortCaption))
+
+	for(idx in c(1:rowCount)){
+		entry<-enriched[idx,]
+		enriched$link[idx]<-paste0("[", entry$tblShortCaption, "](#", entry$tblLink, ")")
+	}
+
+	return(enriched)
+}
+
+```
+
+```{r data, echo=FALSE, results="asis"}
+enriched<-plotData$enriched
+deseq2<-plotData$deseq2
+
+cat(paste0("### ", tabRef("enriched", plotData$category), "\n\n"))
+
+enriched<-updateEnrichedTable(enriched)
+
+rowCount<-nrow(enriched)
+if (rowCount>=20) {
+  rowCount=20
+  cat("\nMore than 20 categories in WebGestalt Result. Only top 20 were kept.\n")
+}
+
+curTable=enriched
+
+if (("geneUp" %in% colnames(curTable)) & ("geneDown" %in% colnames(curTable)) ) {
+  curTable<-enriched[c(1:rowCount),c(1:9, 12,13)]
+  print(kable(curTable) %>%
+	  kable_styling() %>%
+	  row_spec(which(curTable$geneUp > curTable$geneDown), color = "black", background = "bisque") %>%
+	  row_spec(which(curTable$geneUp < curTable$geneDown), color = "black", background = "honeydew") %>%
+	  htmltools::HTML())
+} else {
+  curTable<-enriched[c(1:rowCount),c(1:9)]
+  print(kable(curTable) %>%
+	  kable_styling() %>%
+	  htmltools::HTML())
+}
+cat("\n\n<hr>")
+
+idx<-1
+for(idx in c(1:rowCount)){
+	entry<-enriched[idx,]
+	userIds<-unlist(strsplit( entry$userId[1], ';'))
+	#entryTable<-deseq2[deseq2$Feature_gene_name %in% userIds,]
+	entryTable<-deseq2[deseq2[,geneCol] %in% userIds,]
+	cat(paste0("### ", entry$tblLongCaption, " {#", entry$tblLink, "}\n\n" ))
+	# print(kable(entryTable) %>% 
+	# 	kable_styling() %>%
+	# 	row_spec(which(entryTable[,diffCol] > diffCenterValue), color = "black", background = "bisque") %>% 
+	# 	row_spec(which(entryTable[,diffCol] < diffCenterValue), color = "black", background = "honeydew") %>%
+	# 	htmltools::HTML())
+	temp=kable(entryTable) %>%		kable_styling()
+  if (!is.null(diffCol)) {
+    temp=temp %>% 
+	  	row_spec(which(entryTable[,diffCol] > diffCenterValue), color = "black", background = "bisque") %>% 
+	  	row_spec(which(entryTable[,diffCol] < diffCenterValue), color = "black", background = "honeydew")
+  }
+  print(temp %>% htmltools::HTML())
+	cat("\n\n<hr>")
+}
+
+```
+
+
+
