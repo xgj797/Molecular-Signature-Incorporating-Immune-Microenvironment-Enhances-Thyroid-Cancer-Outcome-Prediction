@@ -43,7 +43,7 @@ count.df.master2=as.matrix(count.df.master2)
 row.names(count.df.master2)=x
 
 # Read in metadatafile, edited order, note HTPTC samples NOT dropped
-meta <- read.csv("meta_diag_and_CAF-EPIC_sort_thyroid_AND_met_remove_outlier4303CP41_and_MNG_and_HT_merge_E_and_I_FVPTCs_include_HTPTCs_9-30-22.csv", header=TRUE, row.names=1, as.is=TRUE)
+meta <- read.csv("meta_diag_and_CAF-EPIC_sort_thyroid_AND_met_remove_outlier_and_MNG_and_HT_merge_E_and_I_FVPTCs_include_HTPTCs_9-30-22.csv", header=TRUE, row.names=1, as.is=TRUE)
 
 # Restrict to only samples in meta
 count.df <- count.df.master2[, colnames(count.df.master2) %in% rownames(meta)]

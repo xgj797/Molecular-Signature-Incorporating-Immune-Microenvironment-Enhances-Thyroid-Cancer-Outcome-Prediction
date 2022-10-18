@@ -27,12 +27,6 @@ ClinicalData_Nonmet_Malignant <- ClinicalData_Nonmet %>% subset(is.na(Progressiv
 # If restricting to well-diff, exclude ATC and PDTC 
 ClinicalData_Nonmet_Malignant_Welldiff <- ClinicalData_Nonmet_Malignant %>% subset(Diagnosis != "ATC" & Diagnosis != "PDTC")
 
-## Excluding 170 and 173 because sample taken long after initial diagnosis
-ClinicalData_Nonmet_Malignant_Welldiff <- ClinicalData_Nonmet_Malignant_Welldiff %>% subset(IP != "IP170" & IP != "IP173")
-
-## Excluding IP 272, and IP 325 -> Local Disease that we dropped
-ClinicalData_Nonmet_Malignant_Welldiff <- ClinicalData_Nonmet_Malignant_Welldiff %>% subset(IP != "IP215" & IP != "IP272" & IP != "IP325")
-
 # Calculating length of PROGRESSION FREE survival from initial therapy complete date
 ClinicalData_Nonmet_Malignant_Welldiff$Recur.or.progress.date <- as.Date(ClinicalData_Nonmet_Malignant_Welldiff$Recur.or.progress.date, "%m/%d/%y")
 ClinicalData_Nonmet_Malignant_Welldiff$Initial.therapy.complete.date <- as.Date(ClinicalData_Nonmet_Malignant_Welldiff$Initial.therapy.complete.date, "%m/%d/%y")

@@ -24,12 +24,6 @@ ClinicalData_Nonmet_Malignant <- ClinicalData_Nonmet %>% subset(is.na(Progressiv
                                                               Progressive.disease == "0" |
                                                               Progressive.disease == "1") #This excludes non-malignant samples which only have non-0 or -1 values in this column
 
-## Excluding 170 and 173 because sample taken long after initial diagnosis
-ClinicalData_Nonmet_Malignant <- ClinicalData_Nonmet_Malignant %>% subset(IP != "IP170" & IP != "IP173")
-
-## Excluding IP 272, and IP 325 -> Local Disease that we dropped
-ClinicalData_Nonmet_Malignant <- ClinicalData_Nonmet_Malignant %>% subset(IP != "IP215" & IP != "IP272" & IP != "IP325")
-
 # Calculating length of OVERALL survival from initial therapy complete date
 ClinicalData_Nonmet_Malignant$Date.of.death <- as.Date(ClinicalData_Nonmet_Malignant$Date.of.death, "%m/%d/%y")
 ClinicalData_Nonmet_Malignant$Initial.therapy.complete.date <- as.Date(ClinicalData_Nonmet_Malignant$Initial.therapy.complete.date, "%m/%d/%y")
