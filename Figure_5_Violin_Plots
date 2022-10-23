@@ -1,14 +1,28 @@
-# Load necessary packages:
+### Figure 5 Violin Plots: Information
+# This script reads in normalized expression data for our cohort of thyroid lesions, filters to non-metastatic lesions, and prints out violin plots for iCAF and myCAF markers
+# myCAF Markers: POSTN, COL1A1, WNT2, LRRC15
+# iCAF Markers: PDGFRA, CXCL12
+
+### Chapters: 
+# 1. Load necessary packages
+# 2. Read in data file
+# 3. Prepare file for making violin plots of myCAF and iCAF markers
+# 4. Restrict to non-metastatic lesions of interest
+# 5. Make myCAF Plots
+# 6. Make iCAF Plots
+
+### Chpater 1. Load necessary packages:
 library(tidyverse)
 library(RColorBrewer)
 
-# Read in data file
+### Chapter 2. Read in data file
 CleanedMergedData <- readRDS(file = "data_in_use/CleanedMergedData_DESeq2NormalizedReads.rds")
 
+### Chapter 3. Prepare file for making violin plots of myCAF and iCAF Markers
 # Establish a column for labeling as Follicular, Papillary, or Transformed (will use to color plots)
 CleanedMergedData$Category <- "Benign"
 
-# Follicular lesions
+# Follicular lesions (these are grouped due to their RAS-like status by BRAF-RAS score)
 for(i in 1:nrow(CleanedMergedData)){
   if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "FA" |      # FA = Follicular Adenoma
      CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "HA" |      # HA = Hurthle Cell Adenoma
@@ -20,40 +34,42 @@ for(i in 1:nrow(CleanedMergedData)){
   }
 }
 
-# Papillary lesions
+# Papillary lesions (These are groupeddue to their BRAF-like status by BRAF-RAS score)
 for(i in 1:nrow(CleanedMergedData)){
-  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "IFVPTC" | # IFVPTC = 
-     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PTC"){
-        CleanedMergedData$Category[i] <- "Papillary"
+  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "IFVPTC" | # IFVPTC = Infiltrative Follicular Variant of Papillary Thyroid Carcinoma
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PTC"){    # PTC = Papillary Thyroid Carcinoma
+        CleanedMergedData$Category[i] <- "Papillary" # Set all of the above variants as "Follicular" for the purpose of coloring plots
   }
 }
 
 # Transformed lesion
 for(i in 1:nrow(CleanedMergedData)){
-  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PDTC" |
-     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "ATC"){
-        CleanedMergedData$Category[i] <- "Transformed"
+  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PDTC" | # PDTC = Poorly Differentiated Thyroid Carcinoma
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "ATC"){  # ATC = Anaplastic Thyroid Carcinoma
+        CleanedMergedData$Category[i] <- "Transformed" # Set all of the above as "Transformed" for the purpose of coloring plots
   }
 }
 
-### Create new variables to simplify the follicular diagnosis
+# Create a new variable to group diagnoses for plotting (Diagnosis_Simplified)
+# Grouping FA with HA (FA/HA) and FTC with HC (FTC/HC)
 CleanedMergedData$Diagnosis_Simplified <- CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC
 for(i in 1:nrow(CleanedMergedData)){
   if(CleanedMergedData$Diagnosis_Simplified[i] == "FA" | CleanedMergedData$Diagnosis_Simplified[i] == "HA"){
     CleanedMergedData$Diagnosis_Simplified[i] <- "FA/HA"
   }
-  else if(CleanedMergedData$Diagnosis_Simplified[i] == "FC" | CleanedMergedData$Diagnosis_Simplified[i] == "HC"){
-    CleanedMergedData$Diagnosis_Simplified[i] <- "FTC/\nHC"
+  else if(CleanedMergedData$Diagnosis_Simplified[i] == "FTC" | CleanedMergedData$Diagnosis_Simplified[i] == "HC"){
+    CleanedMergedData$Diagnosis_Simplified[i] <- "FTC/\nHC" # \n creates a space between FTC and HC on the plot
   }
 }
 
-# Simplify the papillary diagnosis
+# Additional grouping of diagnoses for plotting useing the "Diagnosis_Simplified" variable created above
+# Grouping EFVPTC with NIFTP (EFVPTC/NIFTP) and PTC with IFVPTC (PTC/IFVPTC)
 for(i in 1:nrow(CleanedMergedData)){
   if(CleanedMergedData$Diagnosis_Simplified[i] == "NIFTP" | CleanedMergedData$Diagnosis_Simplified[i] == "EFVPTC"){
-    CleanedMergedData$Diagnosis_Simplified[i] <- "EFVPTC/\nNIFTP"
+    CleanedMergedData$Diagnosis_Simplified[i] <- "EFVPTC/\nNIFTP" # \n creates a space between EFVPTC and NIFTP on the plot
   }
   else if(CleanedMergedData$Diagnosis_Simplified[i] == "PTC" | CleanedMergedData$Diagnosis_Simplified[i] == "IFVPTC"){
-    CleanedMergedData$Diagnosis_Simplified[i] <- "PTC/\nIFVPTC"
+    CleanedMergedData$Diagnosis_Simplified[i] <- "PTC/\nIFVPTC" # \n creates a space between PTC and IFVPTC on the plot
   }
 }
 
@@ -62,11 +78,65 @@ CleanedMergedData$Diagnosis_Simplified_BRS <- CleanedMergedData$Diagnosis_Simpli
 CleanedMergedData$Category_BRS <- CleanedMergedData$Category
 for(i in 1:nrow(CleanedMergedData)){
   if(CleanedMergedData$Diagnosis_Simplified_BRS[i] == "ATC"){
-    if(CleanedMergedData$BRS[i] > 0){
-      CleanedMergedData$Diagnosis_Simplified_BRS[i] <- "  ATC \n RAS"
+    if(CleanedMergedData$BRS[i] > 0){ # ATC samples with BRAF-RAS Score (BRS) > 0 are RAS-like
+      CleanedMergedData$Diagnosis_Simplified_BRS[i] <- "  ATC \n RAS" # \n creates a space between ATC and RAS for the purpose of plotting
     }
-    else if(CleanedMergedData$BRS[i] < 0){
-      CleanedMergedData$Diagnosis_Simplified_BRS[i] <- " ATC \n BRAF"
+    else if(CleanedMergedData$BRS[i] < 0){ # ATC samples with BRAF-RAS Score (BRS) < 0 are BRAF-like
+      CleanedMergedData$Diagnosis_Simplified_BRS[i] <- " ATC \n BRAF" # \n creates a space between ATC and BRAF for the purpose of plotting
     }
   }
 }
+
+### Chapter 4. Restrict to non-metastatic lesions of interest
+# Restrict to non-metastatic lesions
+CleanedMergedData_NonMet <- CleanedMergedData %>% subset(Location.type == "Non-Metastic")
+
+# Restrict to histotypes of interest
+CleanedMergedData_NonMet_Restricted <- CleanedMergedData_NonMet %>% subset(Diagnosis_Simplified != "HT" & # Remove # Not plotting Hashimoto's thyroiditis (HT)
+                                                                           Diagnosis_Simplified != "MNG" &  # Not plotting multinodular goiter (MNG)
+                                                                           Diagnosis.with.HTPTC != "HTPTC") # Excluding PTC samples with background Hashimoto's thyroiditis due to confounding expression of iCAF markers
+
+### Chapter 5. Make myCAF Plots
+## POSTN
+# Log2 transform the POSTN count data for plotting
+CleanedMergedData_NonMet_Restricted$POSTN <- log(CleanedMergedData_NonMet_Restricted$POSTN+1, 2)
+
+# Creat a variable Plot_POSTN that is a ggplot of the POSTN data 
+Plot_POSTN <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, POSTN)) +
+  geom_violin(outlier.size = -1, 
+              aes(fill = Category_BRS),
+              alpha = 0.4, 
+              show.legend = FALSE, 
+              scale = "width") + 
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 1.5, 
+              alpha = 0.7,
+              show.legend = FALSE) +
+  scale_fill_manual(values = c("blue", "red", "purple")) + # Blue = Follicular; Red = Papillary; Puruple = Transformed
+  labs (x = "Diagnosis", y = "Log2\n(Normalized POSTN Counts") + 
+  theme_classic() + 
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5), 
+    axis.title.x = element_text(face = "bold", size = 14.5), 
+    axis.title.y = element_text(face = "bold", size = 13),
+    axis.text.x = element_text(face = "bold", size = 10.5),
+    axis.text.y = element_text(face = "bold", size = 16)) +
+  scale_x_discrete(name ="Diagnosis", limits = c("FA/HA", "FTC/\nHC", "EFVPTC/\nNIFTP", "PTC/\nIFVPTC", "PDTC", "  ATC \n RAS", " ATC \n BRAF")) +
+  scale_y_continuous(breaks = c(5, 7, 9, 11, 13, 15),
+                     limits = c(4.5,15.5)) 
+                     
+# Save the Plot_POSTN as a png                    
+ggsave("outputs/Transformation_Series_POSTN_BRS_Violin.png", 
+       width = 5, height = 3, 
+       Plot_POSTN, dpi = 600)
+
+# Non-parametric statistics for POSTN w/ bonferroni correction on the pairwise.wilcox.test
+kruskal.test(POSTN ~ Diagnosis_Simplified_BRS, data = CleanedMergedData_NonMet_Restricted) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$POSTN, CleanedMergedData_NonMet_Restricted$Diagnosis_Simplified_BRS, 
+                     p.adjust.method = "bonferroni")
+
+
+### Chapter 6. Make iCAF Plots
+                                                                           
+                                                                           
