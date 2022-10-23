@@ -1,0 +1,72 @@
+# Load necessary packages:
+library(tidyverse)
+library(RColorBrewer)
+
+# Read in data file
+CleanedMergedData <- readRDS(file = "data_in_use/CleanedMergedData_DESeq2NormalizedReads.rds")
+
+# Establish a column for labeling as Follicular, Papillary, or Transformed (will use to color plots)
+CleanedMergedData$Category <- "Benign"
+
+# Follicular lesions
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "FA" |      # FA = Follicular Adenoma
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "HA" |      # HA = Hurthle Cell Adenoma
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "NIFTP" |   # NIFTP = Noninvasive follicular thyroid neoplasm with papillary-like nuclear features (NIFTP)
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "FTC" |     # FTC = Follicular Thyroid Carcinoma
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "HC" |      # HC = Hurthle Cell Carcinoma 
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "EFVPTC"){  # EFVPTC = Encapsulated Follicular Variant of Papillary Thyroid Carcinoma
+        CleanedMergedData$Category[i] <- "Follicular" # Set all of the above variants as "Follicular" for the purpose of coloring plots
+  }
+}
+
+# Papillary lesions
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "IFVPTC" | # IFVPTC = 
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PTC"){
+        CleanedMergedData$Category[i] <- "Papillary"
+  }
+}
+
+# Transformed lesion
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PDTC" |
+     CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "ATC"){
+        CleanedMergedData$Category[i] <- "Transformed"
+  }
+}
+
+### Create new variables to simplify the follicular diagnosis
+CleanedMergedData$Diagnosis_Simplified <- CleanedMergedData$Diagnosis.with.iFVPTC.and.eFVPTC
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$Diagnosis_Simplified[i] == "FA" | CleanedMergedData$Diagnosis_Simplified[i] == "HA"){
+    CleanedMergedData$Diagnosis_Simplified[i] <- "FA/HA"
+  }
+  else if(CleanedMergedData$Diagnosis_Simplified[i] == "FC" | CleanedMergedData$Diagnosis_Simplified[i] == "HC"){
+    CleanedMergedData$Diagnosis_Simplified[i] <- "FTC/\nHC"
+  }
+}
+
+# Simplify the papillary diagnosis
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$Diagnosis_Simplified[i] == "NIFTP" | CleanedMergedData$Diagnosis_Simplified[i] == "EFVPTC"){
+    CleanedMergedData$Diagnosis_Simplified[i] <- "EFVPTC/\nNIFTP"
+  }
+  else if(CleanedMergedData$Diagnosis_Simplified[i] == "PTC" | CleanedMergedData$Diagnosis_Simplified[i] == "IFVPTC"){
+    CleanedMergedData$Diagnosis_Simplified[i] <- "PTC/\nIFVPTC"
+  }
+}
+
+# Create a new variable to add a BRAF and RAS component to the simplified diagnosis
+CleanedMergedData$Diagnosis_Simplified_BRS <- CleanedMergedData$Diagnosis_Simplified
+CleanedMergedData$Category_BRS <- CleanedMergedData$Category
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$Diagnosis_Simplified_BRS[i] == "ATC"){
+    if(CleanedMergedData$BRS[i] > 0){
+      CleanedMergedData$Diagnosis_Simplified_BRS[i] <- "  ATC \n RAS"
+    }
+    else if(CleanedMergedData$BRS[i] < 0){
+      CleanedMergedData$Diagnosis_Simplified_BRS[i] <- " ATC \n BRAF"
+    }
+  }
+}
