@@ -19,6 +19,9 @@
 - ERK_gene_heatmap_with_mets.R - generates heatmap for Supplementary Fig 2G
 - PIK3CA_gene_heatmap_with_mets.R - generates heatmap for Supplementary Fig 2I
 
+**/Score_Calculation**
+- folder containing score calculation code
+
 **/Immune**
 - complexheatmap.R – generates heatmap for Figure 6A
 - complexheatmap_TCGA_data.R - generates heatmap for Supplementary Figure 13
