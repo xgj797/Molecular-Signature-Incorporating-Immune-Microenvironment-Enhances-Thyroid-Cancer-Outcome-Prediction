@@ -1,0 +1,395 @@
+
+### Introduction
+
+### Chapter 1: Load packages
+library(tidyverse)
+
+### Chapter 2: Load Cleaned Merged Data
+CleanedMergedData <- readRDS(file = "data_in_use/22-0525_CleanedMergedData_DESeq2NormalizedReads_Diagnosis_Simplified.rds")
+
+## Establish ATC-High and ATC-Low CAF definitions (EPIC)
+# Rename CAF EPIC
+CleanedMergedData <- CleanedMergedData %>% dplyr::rename("CAF_EPIC" = "Cancer associated fibroblast_EPIC")
+# Set CAF EPIC as a numeric
+CleanedMergedData$CAF_EPIC <- as.numeric(CleanedMergedData$CAF_EPIC)
+
+# Rename other variables of interest (e.g., macrophage variables)
+CleanedMergedData <- CleanedMergedData %>% dplyr::rename("M1" = "Macrophage M1_CIBERSORT-ABS")
+CleanedMergedData <- CleanedMergedData %>% dplyr::rename("M2" = "Macrophage M2_CIBERSORT-ABS")
+
+# Set variables of interest to numerics
+CleanedMergedData$BRS <- as.numeric(CleanedMergedData$BRS)
+CleanedMergedData$Macrophage_TIMER <- as.numeric(CleanedMergedData$Macrophage_TIMER)
+CleanedMergedData$M1 <- as.numeric(CleanedMergedData$M1)
+CleanedMergedData$M2 <- as.numeric(CleanedMergedData$M2)
+CleanedMergedData$Neutrophil_TIMER <- as.numeric(CleanedMergedData$Neutrophil_TIMER)
+CleanedMergedData$TIDE <- as.numeric(CleanedMergedData$TIDE)
+CleanedMergedData$Exclusion <- as.numeric(CleanedMergedData$Exclusion)
+CleanedMergedData$Dysfunction <- as.numeric(CleanedMergedData$Dysfunction)
+
+# Label each tumor as BRAF-like or RAS-like
+CleanedMergedData$BRS_Category <- "Unknown"
+for(i in 1:nrow(CleanedMergedData)){
+  if(CleanedMergedData$BRS[i] > 0){
+    CleanedMergedData$BRS_Category[i] <- "RAS-Like"
+  }
+  else if(CleanedMergedData$BRS[i] < 0){
+    CleanedMergedData$BRS_Category[i] <- "BRAF-Like"
+  }
+}
+
+# log transform variables of interest
+# CXCL5 (Ligand of interest)
+CleanedMergedData$CXCL5 <- log(CleanedMergedData$CXCL5+1, 2)
+# MRC1 (M2 Marker)
+CleanedMergedData$MRC1 <- log(CleanedMergedData$MRC1+1, 2)
+# CD163 (M2 Marker)
+CleanedMergedData$CD163 <- log(CleanedMergedData$CD163+1, 2)
+# CD80 (M1 Marker)
+CleanedMergedData$CD80 <- log(CleanedMergedData$CD80+1, 2)
+# CD86 (M1 Marker)
+CleanedMergedData$CD86 <- log(CleanedMergedData$CD86+1, 2)
+# FCGR1A (CD64, M1 Marker)
+CleanedMergedData$FCGR1A <- log(CleanedMergedData$FCGR1A+1, 2)
+# FCGR1B (CD64, M1 Marker)
+CleanedMergedData$FCGR1B <- log(CleanedMergedData$FCGR1B+1, 2)
+# FCGR2A (CD32, M1 Marker)
+CleanedMergedData$FCGR2A <- log(CleanedMergedData$FCGR2A+1, 2)
+# FCGR2B (CD32, M1 Marker)
+CleanedMergedData$FCGR2B <- log(CleanedMergedData$FCGR2B+1, 2)
+# CD40 (M1 Marker)
+CleanedMergedData$CD40 <- log(CleanedMergedData$CD40+1, 2)
+# NOS2 (M1 Marker)
+CleanedMergedData$NOS2 <- log(CleanedMergedData$NOS2+1, 2)
+# SOCS1 (M1 Marker)
+CleanedMergedData$SOCS1 <- log(CleanedMergedData$SOCS1+1, 2)
+# MARCO (M1 Marker)
+CleanedMergedData$MARCO <- log(CleanedMergedData$MARCO+1, 2)
+# CXCL9 (M1 Marker)
+CleanedMergedData$CXCL9 <- log(CleanedMergedData$CXCL9+1, 2)
+# CXCL10 (M1 Marker)
+CleanedMergedData$CXCL10 <- log(CleanedMergedData$CXCL10+1, 2)
+# CXCL11 (M1 Marker)
+CleanedMergedData$CXCL11 <- log(CleanedMergedData$CXCL11+1, 2)
+# IL1B (M1 Marker)
+CleanedMergedData$IL1B <- log(CleanedMergedData$IL1B+1, 2)
+
+
+# Subset data to create ATC and PTC data sets
+ClinicalData_ATC_Local <- CleanedMergedData %>% subset(Diagnosis_Simplified == "ATC" & !is.na(CAF_EPIC)) # Note that local here actually encompasses all samples
+ClinicalData_PTC_Local <- CleanedMergedData %>% subset(Diagnosis_Simplified == "PTC/\nIFVPTC" & !is.na(CAF_EPIC)) # Note that local here actually encompasses all samples
+ATC_Quantiles <- quantile(ClinicalData_ATC_Local$CAF_EPIC)
+PTC_Quantiles <- quantile(ClinicalData_PTC_Local$CAF_EPIC)
+
+# Group ATCs into > 50th percentile and < 50th percentile for CAFs
+ClinicalData_ATC_Local$CAF_Level_Binary <- "ATC"
+for(i in 1:nrow(ClinicalData_ATC_Local)){
+  if(ClinicalData_ATC_Local$CAF_EPIC[i] >= ATC_Quantiles[3]){
+    ClinicalData_ATC_Local$CAF_Level_Binary[i] <- "CAF-High"
+  }
+  else if(ClinicalData_ATC_Local$CAF_EPIC[i] < ATC_Quantiles[3]){
+    ClinicalData_ATC_Local$CAF_Level_Binary[i] <- "CAF-Low"
+  }
+}
+
+# Make the plots of interest for Figure 6: 
+# Plot Neutrophil_TIMER by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, Neutrophil_TIMER)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "Neutrophils TIMER") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  theme_classic() + 
+  ggtitle("Neutrophils TIMER") +
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) # +
+# geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_Neutrophil_TIMER_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(Neutrophil_TIMER ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$Neutrophil_TIMER, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 0.0075
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, Neutrophil_TIMER ~ CAF_Level_Binary) # This returned 0.007485 (equivalent w/ above)
+
+# Plot Macrophage_TIMER by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, Macrophage_TIMER)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "Macrophage TIMER") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("Macrophages TIMER") +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) #+
+# geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_Macrophage_TIMER_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(Macrophage_TIMER ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$Macrophage_TIMER, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 0.023
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, Macrophage_TIMER ~ CAF_Level_Binary) # This returned 0.02343 (equivalent w/ above)
+
+# Plot M1 Cibersort-Abs by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, M1)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) + 
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "M1 Macrophages") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("M1 CIBERSORT-Abs") +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 34), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) # +
+# geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_M1_CibersortAbs_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(M1 ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$M1, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 3.1e-05 (< 0.0001)
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, M1 ~ CAF_Level_Binary) # This returned 3.098e-05 (equivalent w/ above)
+
+# Plot M2 Cibersort-Abs by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, M2)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "M2 Macrophages") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("M2 CIBERSORT-Abs") +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) # +
+# geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_M2_CibersortAbs_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(M2 ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$M2, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 0.12
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, M2 ~ CAF_Level_Binary) # This returned 0.1188 (equivalent w/ above)
+
+# Plot TIDE Score by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, TIDE)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "TIDE Score") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("TIDE Score") +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) +
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_TIDE_Score_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(TIDE ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$TIDE, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 0.00018
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, TIDE ~ CAF_Level_Binary) # This returned 0.0001763 (equivalent w/ above)
+
+# Plot Exclusion Score  by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, Exclusion)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "Exclusion Score") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("Exclusion Score") +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) +
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_Exclusion_Score_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(Exclusion ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$Exclusion, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 5.1e-6
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, Exclusion ~ CAF_Level_Binary) # This returned 5.086e-6 (equivalent w/ above)
+
+# Plot Dysfunction Score by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, Dysfunction)) +
+  geom_boxplot(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "Dysfunction Score") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("Dysfunction Score") +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High")) +
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_Dysfunction_Score_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(Dysfunction ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$Dysfunction, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 0.026
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, Dysfunction ~ CAF_Level_Binary) # This returned 0.02609 (equivalent w/ above)
+
+# Plot MRC1 Expression by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, MRC1)) +
+  geom_violin(outlier.size = -1, 
+               aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+               scale = "width",
+               show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "Dysfunction Score") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("MRC1") +
+  scale_y_continuous(breaks = c(8, 9, 10, 11, 12, 13, 14), limits = c(7.8, 14)) +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High"))
+  #geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_MRC1_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(MRC1 ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$MRC1, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 7.1e-05
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, MRC1 ~ CAF_Level_Binary) # This returned 7.069e-05 (equivalent w/ above)
+
+# Plot CD163 Expression by CAF level for ATCs
+plot <- ggplot(ClinicalData_ATC_Local, aes(CAF_Level_Binary, CD163)) +
+  geom_violin(outlier.size = -1, 
+              aes(fill = CAF_Level_Binary, alpha = CAF_Level_Binary),
+              scale = "width",
+              show.legend = FALSE) + 
+  scale_alpha_discrete(range = c(0.7, 0.7)) +
+  geom_jitter(aes(),
+              position = position_jitter(width = 0.1, height = 0),
+              size = 4, 
+              alpha = 0.9,
+              show.legend = FALSE) +
+  labs (x = "ATC CAF Level", y = "Dysfunction Score") + 
+  scale_fill_manual(values = c("green", "seagreen")) + 
+  ggtitle("CD163") +
+  scale_y_continuous(breaks = c(9, 10, 11, 12, 13, 14), limits = c(8.8, 14.2)) +
+  theme_classic() + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 4, fill = NA),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 35), 
+    axis.title.x = element_text(face = "bold", size = 35), 
+    axis.title.y = element_blank(),
+    axis.text = element_text(face = "bold", size = 30)) +
+  scale_x_discrete(name ="ATC", limits = c("CAF-Low", "CAF-High"))
+#geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)
+ggsave("outputs/22-0926_Figure_6_Plots_All_Sample/22-0926_CD163_by_CAFs_ATCs.png",
+       width = 5.5,
+       height = 5,
+       plot, dpi = 600)
+# Stats: 
+kruskal.test(CD163 ~ CAF_Level_Binary, data = ClinicalData_ATC_Local) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(ClinicalData_ATC_Local$CD163, ClinicalData_ATC_Local$CAF_Level_Binary, # this returned 0.0014
+                     p.adjust.method = "BH")
+wilcox.test(data = ClinicalData_ATC_Local, CD163 ~ CAF_Level_Binary) # This returned 0.001443 (equivalent w/ above)
