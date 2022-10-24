@@ -9,15 +9,15 @@
 - folder containing all RNA seq data processing pipeline code
 
 **/Oncoplot**
-- Oncoplot.R – generates oncoplot for Figure 1C
-- Oncoplot_aggressive_compare_PTC-IFVPTC-EFVPTC.R – generates oncoplots for Figure 1B
-- Oncoplot_aggressive_compare_FTC-HC.R – generates oncoplots for Figure 1C
+- Fig_1C_Oncoplot.R
+- Supplementary_Fig_1B_Oncoplot_aggressive_compare_PTC-IFVPTC-EFVPTC.R
+- Supplementary_Fig_1C_Oncoplot_aggressive_compare_FTC-HC.R
 
 **/Gene_Expression_Heatmap**
-- BRS_gene_heatmap_with_mets.R - generates heatmap for Supplementary Fig 2A
-- TDS_gene_heatmap_with_mets.R - generates heatmap for Supplementary Fig 2C
-- ERK_gene_heatmap_with_mets.R - generates heatmap for Supplementary Fig 2G
-- PIK3CA_gene_heatmap_with_mets.R - generates heatmap for Supplementary Fig 2I
+- Supplementary_Fig_2A_BRS_gene_heatmap_with_mets.R
+- Supplementary_Fig_2C_TDS_gene_heatmap_with_mets.R
+- Supplementary_Fig_2G_ERK_gene_heatmap_with_mets.R
+- Supplementary_Fig_2I_PIK3CA_gene_heatmap_with_mets.R
 
 **/Score_Calculation**
 - folder containing score calculation code
@@ -26,12 +26,12 @@
 - folder containing Visium spatial transcriptomics analysis
 
 **/Immune**
-- complexheatmap.R – generates heatmap for Figure 6A
-- complexheatmap_TCGA_data.R - generates heatmap for Supplementary Figure 13
+- Fig_6A_complexheatmap.R
+- Supplementary_Fig_13_complexheatmap_TCGA_data.R
 
 **/Survival_Analysis**
-- OS_all_non-metastatic.R – generates overall survival curves for Supplementary Figure 1A
-- PFS_all_non-metastatic.R – generates progression-free survival curves for Figure 1D-F, 7A,C, Supplementary Figure 2F, 15A
+- Supplementary_Fig_1A_OS_all_non-metastatic.R
+- PFS_all_non-metastatic.R – generates progression-free survival curves for Figure 1D-F, 7A,C, Supplementary Figure 2F, 15A,E
 - PFS_well_diff.R – generates progression-free survival curves for Figure 2C, 7B,D, Supplementary Figure 15B
 
 **/Aggression_Prediction**
