@@ -3,7 +3,10 @@
 ## Overview
 
 ## Pipeline
-()
+
+**/20210616_human_exomeseq_scripts - folder containing all DNA seq data processing pipeline code
+
+**/20210624_human_wntpathway_rnaseq_scripts - folder containing all RNA seq data processing pipeline code
 
 
 ## Mutation
