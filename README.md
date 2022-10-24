@@ -23,7 +23,7 @@
 - folder containing score calculation code
 
 **/Visium_Analysis**
-- folder containing Visium spatial transcriptomics analysis
+- folder containing Visium spatial transcriptomics analysis code
 
 **/Immune**
 - Fig_6A_complexheatmap.R
