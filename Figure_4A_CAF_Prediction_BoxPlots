@@ -1,13 +1,14 @@
 ### Figure 4A CAF Prediction Boxplots: Information
-# This script reads in normalized expression data for our cohort of thyroid lesions, filters to non-metastatic lesions, and prints out boxplots for CAF EPIC and CAF MCPCOUNTER prediction algorithms by diagnosis
+# This script reads in normalized expression data and immune deconvolution for our cohort of thyroid lesions, filters to non-metastatic lesions, and prints out boxplots for CAF EPIC and CAF MCPCOUNTER prediction algorithms by diagnosis
 
 ### Chapters: 
 # 1. Load necessary packages
 # 2. Read in data file
-# 3. Prepare file for making violin plots of myCAF and iCAF markers
+# 3. Prepare file for making box plots of CAF EPIC and CAF MCPCOUNTER by Diagnosis
 # 4. Restrict to non-metastatic lesions of interest
-# 5. Make myCAF Plots
-# 6. Make iCAF Plots
+# 5. Rename CAF EPIC and CAF MCPCOUNTER variables
+# 6. Log2 Transform CAF EPIC and CAF MCPCOUNTER variables
+# 7. Make CAF EPIC and CAF MCPCOUNTER plots by Diagnosis
 
 ### Chapter 1. Load necessary packages
 library(tidyverse)
@@ -16,7 +17,7 @@ library(RColorBrewer)
 ### Chapter 2. Read in data file
 CleanedMergedData <- readRDS(file = "data_in_use/CleanedMergedData_DESeq2NormalizedReads.rds")
 
-### Chapter 3. Prepare file for making violin plots of myCAF and iCAF Markers
+### Chapter 3. Prepare file for making box plots of CAF EPIC and CAF MCPCOUNTER by Diagnosis 
 # Establish a column for labeling as Follicular, Papillary, or Transformed (will use to color plots)
 CleanedMergedData$Category <- "Benign"
 
@@ -108,9 +109,9 @@ CleanedMergedData_NonMet_Restricted$CAF_MCPCOUNTER <- as.numeric(CleanedMergedDa
 CleanedMergedData_NonMet_Restricted$CAF_EPIC <- log(CleanedMergedData_NonMet_Restricted$CAF_EPIC*100+1, 2) # multiply from 100 to move from decimals to whole numbers
 CleanedMergedData_NonMet_Restricted$CAF_MCPCOUNTER <- log(CleanedMergedData_NonMet_Restricted$CAF_MCPCOUNTER+1, 2)
 
-### Chapter 6. Make CAF EPIC and CAF MCPCOUNTER plots by Diagnosis
+### Chapter 7. Make CAF EPIC and CAF MCPCOUNTER plots by Diagnosis
 ## CAF EPIC
-# Creat a variable Plot_EPIC that is a ggplot of the CAF_EPIC data 
+# Create a variable Plot_EPIC that is a ggplot of the CAF_EPIC data 
 Plot_EPIC <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, CAF_EPIC)) +
   geom_boxplot(outlier.size = -1, 
                aes(fill = Category_BRS),
@@ -147,7 +148,7 @@ pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$CAF_EPIC, CleanedMerged
                      
                      
 ## CAF MCPCOUNTER
-# Creat a variable Plot_MCPCOUNTER that is a ggplot of the CAF_MCPCOUNTER data                      
+# Create a variable Plot_MCPCOUNTER that is a ggplot of the CAF_MCPCOUNTER data                      
 Plot_MCPCOUNTER <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, CAF_MCPCOUNTER)) +
   geom_boxplot(outlier.size = -1, 
                aes(fill = Category_BRS),
