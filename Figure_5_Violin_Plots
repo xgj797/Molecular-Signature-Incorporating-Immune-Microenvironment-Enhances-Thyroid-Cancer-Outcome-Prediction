@@ -11,7 +11,7 @@
 # 5. Make myCAF Plots
 # 6. Make iCAF Plots
 
-### Chpater 1. Load necessary packages:
+### Chapter 1. Load necessary packages
 library(tidyverse)
 library(RColorBrewer)
 
