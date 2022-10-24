@@ -20,7 +20,7 @@ folder containing all RNA seq data processing pipeline code
 **Oncoplot_aggressive_compare_FTC-HC.R** – generates oncoplots for Figure 1C
 
 
-## /Gene Expression Heatmaps
+## /Gene Expression
 
 **BRS_gene_heatmap_with_mets.R** - generates heatmap for Supplementary Fig 2A
 
@@ -31,7 +31,7 @@ folder containing all RNA seq data processing pipeline code
 **PIK3CA_gene_heatmap_with_mets.R** - generates heatmap for Supplementary Fig 2I
 
 
-## /Immune Heatmaps
+## /Immune
 
 **complexheatmap.R** – generates heatmap for Figure 6A
 
