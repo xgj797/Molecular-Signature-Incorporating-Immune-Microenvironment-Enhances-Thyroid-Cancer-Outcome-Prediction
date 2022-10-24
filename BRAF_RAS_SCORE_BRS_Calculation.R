@@ -69,7 +69,7 @@ BRS_Genes <- BRS_Genes %>% arrange(BRS_Gene_list)
 
 
 ########## Step 3: Formatting Internal DESeq2 centroids to calculate Z-Scores ###########
-Thyroid_Cohort_RNA <- read.table(file = "data_in_use/21-1228_DESeq2_Z-Scores.txt", sep = '\t', header = TRUE)
+Thyroid_Cohort_RNA <- read.table(file = "data_in_use/DESeq2_Z-Scores.txt", sep = '\t', header = TRUE)
 Thyroid_Cohort_RNA <- as_tibble(Thyroid_Cohort_RNA) # Change type to tibble
 
 # Restrict data to just RNA IDs and the genes in the gene list
