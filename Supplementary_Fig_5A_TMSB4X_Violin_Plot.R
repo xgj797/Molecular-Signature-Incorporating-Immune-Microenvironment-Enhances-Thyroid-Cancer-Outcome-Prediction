@@ -1,4 +1,4 @@
-### Supplemental Fig 5A Violin Plot for TMSB4X: Information
+### Supplementary Fig 5A Violin Plot for TMSB4X: Information
 # This script reads in normalized expression data for our cohort of thyroid lesions, filters to non-metastatic lesions, and prints out a violin plot for TMSB4X
 # TMSB4X has previously been shown as a predictor of aggressive disease in PTCs (Nature Communications PTC scRNA-Seq paper)
 
