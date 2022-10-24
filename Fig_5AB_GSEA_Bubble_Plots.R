@@ -73,3 +73,27 @@ dot_data_Local_iCAF <- dot_data_Local[c(3,9,12),] # Isolate iCAF rows (note, rem
   ggsave("ggplot_output/22-1007_ggplot/22-1007_GSEA_iCAF_Local_Thyroid_Malignancies.png", 
          width = 5, height = 5,
          dot_plot, dpi = 600)
+
+
+
+#### Figure 5B: ATC-BRAF vs ATC-RAS 
+ATC_dot_data <- read.csv(file = "Data/22-0324_Local_ATC_BRAF_vs_RAS.csv")
+
+# Plot ATC dot data
+dot_plot <- ggplot(ATC_dot_data, aes(NES, fct_reorder(GeneSet, Order))) + 
+  geom_point(aes(size = GeneRatio, fill = FDR_qvalue), shape = 21, stroke = 1) +
+  theme_bw(base_size = 10) +
+  scale_size_continuous(range = c(0, 15), limits = c(0,1), "Gene Ratio (tags)") +
+  scale_fill_distiller(limits=c(0,1), type="div", palette= "RdYlBu", direction = 1, "FDR q Value") +
+  scale_x_continuous(name="NES", seq(-3, 3, by = 1), NULL, expand = c(0,0), limits=c(-3.7, 3.7), NULL) +
+  theme(aspect.ratio = 1,
+        axis.title = element_text(face = "bold", size = 10),
+        axis.text = element_text(face = "bold", size = 10),
+        title = element_text(face = "bold", size = 9)) +
+  ggtitle("RAS-Like \t\t\t\tBRAF-Like\nLocal ATCs \tLocal ATCs") + 
+  geom_vline(xintercept = 0, size = 0.25) + 
+  labs(y = "")
+ggsave("ggplot_output/22-0324_ggplot/22-0324_GSEA_ATC_BRAF-Like_RAS-Like_Local_Thyroid_Malignancies.png", 
+       width = 4, height = 4,
+       dot_plot, dpi = 600)
+  
