@@ -101,7 +101,7 @@ CleanedMergedData_NonMet_Restricted <- CleanedMergedData_NonMet %>% subset(Diagn
 # Log2 transform the POSTN count data for plotting
 CleanedMergedData_NonMet_Restricted$POSTN <- log(CleanedMergedData_NonMet_Restricted$POSTN+1, 2)
 
-# Creat a variable Plot_POSTN that is a ggplot of the POSTN data 
+# Create a variable Plot_POSTN that is a ggplot of the POSTN data 
 Plot_POSTN <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, POSTN)) +
   geom_violin(outlier.size = -1, 
               aes(fill = Category_BRS),
@@ -141,7 +141,7 @@ pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$POSTN, CleanedMergedDat
 # Log2 transform the WNT2 count data for plotting
 CleanedMergedData_NonMet_Restricted$WNT2 <- log(CleanedMergedData_NonMet_Restricted$WNT2+1, 2)
 
-# Creat a variable Plot_WNT2 that is a ggplot of the WNT2 data 
+# Create a variable Plot_WNT2 that is a ggplot of the WNT2 data 
 Plot_WNT2 <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, WNT2)) +
   geom_violin(outlier.size = -1, 
               aes(fill = Category_BRS),
@@ -181,7 +181,7 @@ pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$WNT2, CleanedMergedData
 # Log2 transform the COL1A1 count data for plotting
 CleanedMergedData_NonMet_Restricted$COL1A1 <- log(CleanedMergedData_NonMet_Restricted$COL1A1+1, 2)
 
-# Creat a variable Plot_COL1A1 that is a ggplot of the COL1A1 data 
+# Create a variable Plot_COL1A1 that is a ggplot of the COL1A1 data 
 Plot_COL1A1 <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, COL1A1)) +
   geom_violin(outlier.size = -1, 
               aes(fill = Category_BRS),
@@ -221,7 +221,7 @@ pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$COL1A1, CleanedMergedDa
 # Log2 transform the LRRC15 count data for plotting
 CleanedMergedData_NonMet_Restricted$LRRC15 <- log(CleanedMergedData_NonMet_Restricted$LRRC15+1, 2)
 
-# Creat a variable Plot_LRRC15 that is a ggplot of the LRRC15 data 
+# Create a variable Plot_LRRC15 that is a ggplot of the LRRC15 data 
 Plot_LRRC15 <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, LRRC15)) +
   geom_violin(outlier.size = -1, 
               aes(fill = Category_BRS),
@@ -262,7 +262,7 @@ pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$LRRC15, CleanedMergedDa
 # Log2 transform the PDGFRA count data for plotting
 CleanedMergedData_NonMet_Restricted$PDGFRA <- log(CleanedMergedData_NonMet_Restricted$PDGFRA+1, 2)
 
-# Creat a variable Plot_PDGFRA that is a ggplot of the PDGFRA data 
+# Create a variable Plot_PDGFRA that is a ggplot of the PDGFRA data 
 Plot_PDGFRA <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, PDGFRA)) +
   geom_violin(outlier.size = -1, 
               aes(fill = Category_BRS),
@@ -302,7 +302,7 @@ pairwise.wilcox.test(CleanedMergedData_NonMet_Restricted$PDGFRA, CleanedMergedDa
 # Log2 transform the CXCL12 count data for plotting
 CleanedMergedData_NonMet_Restricted$CXCL12 <- log(CleanedMergedData_NonMet_Restricted$CXCL12+1, 2)
 
-# Creat a variable Plot_CXCL12 that is a ggplot of the CXCL12 data 
+# Create a variable Plot_CXCL12 that is a ggplot of the CXCL12 data 
 Plot_CXCL12 <- ggplot(CleanedMergedData_NonMet_Restricted, aes(Diagnosis_Simplified_BRS, CXCL12)) +
   geom_violin(outlier.size = -1, 
               aes(fill = Category_BRS),
