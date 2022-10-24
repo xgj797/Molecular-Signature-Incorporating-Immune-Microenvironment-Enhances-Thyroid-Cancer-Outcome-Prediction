@@ -1,6 +1,6 @@
 # Author: Matthew Loberg
 # Date: 22-0617
-# Script: Supplemental Figure 6 (TCGA Violins)
+# Script: Supplementary Figure 6 (TCGA Violins)
 
 ## Description
 # Script for making the plots in supplemental Figure 6 - TCGA Violins comparing ATS and BRS
