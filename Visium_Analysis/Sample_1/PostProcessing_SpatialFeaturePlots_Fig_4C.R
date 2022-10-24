@@ -1,5 +1,6 @@
 ### Sample1 Spatial Feature plots: Information
 # This file reads in SCTransformed Sample1 spatial transcriptomics data and outputs spatial feature plots for FAP and ACTA2
+# These are the spatial feature plots on Fig. 4C (next to bulk RNA-Seq violin plots by diagnosis)
 
 ### Chapters: 1-3
 # 1. Load packages
