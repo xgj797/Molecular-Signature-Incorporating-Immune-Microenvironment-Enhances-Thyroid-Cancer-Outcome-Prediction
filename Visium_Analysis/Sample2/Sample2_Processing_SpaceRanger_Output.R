@@ -80,10 +80,4 @@ saveRDS(Sample2, "data_in_Use/Sample2/Sample2_SCTransformed_All_Genes.rds")
 rm(Sample2)
 
 # I will start subsequent analysis by loading the SCTransformed/processed version of Sample2
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Security
-Status
+
