@@ -1,6 +1,6 @@
 # Unique Stromal Infiltrate Defines Aggressive Thyroid-Cancers
 
-## Overview
+## Sub-folder Overview
 
 **/20210616_human_exomeseq_scripts**
 - folder containing all DNA seq data processing pipeline code
