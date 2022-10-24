@@ -1,14 +1,14 @@
 # Author: Matthew Aaron Loberg
 # Date: 22-0913
-# Goal: read in pre-processed Sample4 and add fibroblast module scores (normal, myCAF, iCAF)
+# Goal: read in pre-processed Sample1 and add fibroblast module scores (normal, myCAF, iCAF)
 # Visiualize fibroblast scores (normal, myCAF, iCAF) spatially
 
 # Load packages:
 library(tidyverse)
 library(Seurat)
 
-# Load processed Sample4
-Sample4 <- readRDS(file = "Data_in_Use/Sample4/Sample4_Clustered_0.3Res.rds")
+# Load processed Sample1
+Sample1 <- readRDS(file = "Data_in_Use/Sample1/Sample1_Clustered_0.3Res.rds")
 
 # Read in fibroblast gene sets
 Kieffer_Combined <- 
@@ -26,34 +26,34 @@ Kieffer_myCAF_Combined <- list(Kieffer_Combined[2:nrow(Kieffer_Combined), 3])
 Kieffer_myCAF_Combined <- list(Kieffer_myCAF_Combined[[1]][1:75]) # Restrict myCAF combined to the appropriate length
 
 ### Add in normal fibroblasts
-Sample4 <- AddModuleScore(object = Sample4,
+Sample1 <- AddModuleScore(object = Sample1,
                           features = Kieffer_Normal_Fibroblast,
                           name = 'Kieffer_Normal_Fibroblast')
-NormalFibroblastSpatial <- SpatialFeaturePlot(Sample4, features = c("Kieffer_Normal_Fibroblast1"))
-ggsave("outputs/Sample4_Normal_Fibroblast_ModuleScore.png",
+NormalFibroblastSpatial <- SpatialFeaturePlot(Sample1, features = c("Kieffer_Normal_Fibroblast1"))
+ggsave("outputs/Sample1_Normal_Fibroblast_ModuleScore.png",
        NormalFibroblastSpatial,
        width = 4, height = 5, dpi = 600)
 
 ### Add in myCAFs
-Sample4 <- AddModuleScore(object = Sample4,
+Sample1 <- AddModuleScore(object = Sample1,
                           features = Kieffer_myCAF_Combined,
                           name = 'Kieffer_myCAF_Combined')
 
 # Print out spatial plot for myCAF
-MyCAFFibroblastSpatial <- SpatialFeaturePlot(Sample4, features = c("Kieffer_myCAF_Combined1"))
-ggsave("outputs/Sample4_myCAF_ModuleScore.png",
+MyCAFFibroblastSpatial <- SpatialFeaturePlot(Sample1, features = c("Kieffer_myCAF_Combined1"))
+ggsave("outputs/Sample1_myCAF_ModuleScore.png",
        MyCAFFibroblastSpatial,
        width = 4, height = 5, dpi = 600)
 
 
 ### Add in iCAFs
-Sample4 <- AddModuleScore(object = Sample4, 
+Sample1 <- AddModuleScore(object = Sample1, 
                           features = Kieffer_iCAF_Combined,
                           name = 'Kieffer_iCAF_Combined')
 
 
 # Print out spatial plot for iCAF
-iCAFFibroblastSpatial <- SpatialFeaturePlot(Sample4, features = c("Kieffer_iCAF_Combined1"))
-ggsave("outputs/Sample4_iCAF_ModuleScore.png",
+iCAFFibroblastSpatial <- SpatialFeaturePlot(Sample1, features = c("Kieffer_iCAF_Combined1"))
+ggsave("outputs/Sample1_iCAF_ModuleScore.png",
        iCAFFibroblastSpatial,
        width = 4, height = 5, dpi = 600)
