@@ -66,6 +66,6 @@ Sample1 <- SCTransform(Sample1, assay = "Spatial", return.only.var.genes = FALSE
 saveRDS(Sample1, "data_in_Use/Sample1/Sample1_SCTransformed_All_Genes.rds")
 
 # Cleaning up
-rm(Sample11)
+rm(Sample1)
 
 # I will start subsequent analysis by loading the SCTransformed/processed version of Sample1
