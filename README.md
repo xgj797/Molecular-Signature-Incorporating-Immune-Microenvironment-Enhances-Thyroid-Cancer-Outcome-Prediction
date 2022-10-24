@@ -2,8 +2,6 @@
 
 ## Overview
 
-## Pipeline
-
 ## /20210616_human_exomeseq_scripts
 
 folder containing all DNA seq data processing pipeline code
