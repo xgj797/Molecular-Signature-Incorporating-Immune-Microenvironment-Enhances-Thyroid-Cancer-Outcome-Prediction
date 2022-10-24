@@ -9,7 +9,7 @@
 **/20210624_human_wntpathway_rnaseq_scripts** - folder containing all RNA seq data processing pipeline code
 
 
-## Mutation
+## Oncoplot
 
 **Oncoplot.R** – generates oncoplot for Figure 1C
 
@@ -18,7 +18,7 @@
 **Oncoplot_aggressive_compare_FTC-HC.R** – generates oncoplots for Figure 1C
 
 
-## Gene Expression
+## Gene Expression Heatmaps
 
 **BRS_gene_heatmap_with_mets.R** - generates heatmap for Supplementary Fig 2A
 
@@ -29,14 +29,14 @@
 **PIK3CA_gene_heatmap_with_mets.R** - generates heatmap for Supplementary Fig 2I
 
 
-## Immune
+## Immune Heatmaps
 
 **complexheatmap.R** – generates heatmap for Figure 6A
 
 **complexheatmap_TCGA_data.R** - generates heatmap for Supplementary Figure 13
 
 
-## PFS
+## Survival Analysis
 
 **OS_all_non-metastatic.R** – generates overall survival curves for Supplementary Figure 1A
 
