@@ -6,7 +6,7 @@
 # 5. Looking at Specific TIMER Populations by CAF Level
 # 6. Repeat above with PTCs from our cohort
 
-# Note: was originally supplemental 12, so some of the outputs say Sup12 instead of Sup14
+# Note: was originally supplementary 12, so some of the outputs say Sup12 instead of Sup14
 
 ### Chapter 1: Load necessary packages ###
 library(tidyverse)
