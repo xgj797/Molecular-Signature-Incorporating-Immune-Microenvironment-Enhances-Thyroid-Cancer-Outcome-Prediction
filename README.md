@@ -22,8 +22,8 @@
 **/Score_Calculation**
 - folder containing score calculation code
 
-**/DEseq2_Analysis**
-- folder containing DEseq2 analysis code
+**/DESeq2_Analysis**
+- folder containing DESeq2 analysis code
 
 **/Visium_Analysis**
 - folder containing Visium spatial transcriptomics analysis code
