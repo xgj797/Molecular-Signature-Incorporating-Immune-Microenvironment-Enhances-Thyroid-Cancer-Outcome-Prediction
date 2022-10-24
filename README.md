@@ -22,6 +22,9 @@
 **/Score_Calculation**
 - folder containing score calculation code
 
+**/Visium_Analysis**
+- folder containing Visium spatial transcriptomics analysis
+
 **/Immune**
 - complexheatmap.R – generates heatmap for Figure 6A
 - complexheatmap_TCGA_data.R - generates heatmap for Supplementary Figure 13
