@@ -4,7 +4,7 @@
 ## 22-1019 Update
 # Making dot plots for the 549 gene ATS and for the 673 RAS-like upregulated genes
 
-# Supplemental Figure 5C + Figure 5D
+# Supplementary Figure 5C + Figure 5D
 # Gene ontology analysis performed on geneontology.org
 # Results are plotted here as dot plots
 
