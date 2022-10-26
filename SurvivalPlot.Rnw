@@ -1,0 +1,317 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{setspace,relsize}  % for latex(describe()) (Hmisc package)
+
+%\usepackage{relsize}  % for latex(describe()) (Hmisc package)
+\usepackage{longtable}  % for tables that break over multiple pages
+\usepackage[pdftex]{lscape}
+\usepackage[margin=0.4in,bottom=0.5in,includehead,includefoot]{geometry}  % sets 0.5-inch margins
+\usepackage{amssymb,amsmath,bm,graphicx,epsfig,array,color} % math 
+%\usepackage{amssymb,amsmath,bm,graphicx,epsfig,topcapt,colortbl,array,color} % math formatting
+\usepackage{hyperref}
+\usepackage{alltt}
+\usepackage{booktabs}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+
+\title{Thyroid - OS and PFS analysis}
+\author{Sheau-Chiann Chen and Fei Ye} 
+\date{}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+\maketitle
+\tableofcontents
+
+\clearpage
+
+%-----------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+<<setup, include=FALSE, echo=FALSE>>=
+library(knitr)
+opts_knit$set(progress = TRUE, verbose = FALSE, eval.after = c("fig.cap"))
+opts_chunk$set(
+   cache = FALSE,
+   echo = FALSE,
+   tidy = TRUE,
+   dev="pdf",
+ #dev="win.metafile", #(to PI only use at final)
+  fig.path="graphics/",
+#   out.width=".6\\textwidth",
+   fig.keep="high",
+   fig.show="hold",
+   fig.height=3,
+   fig.width=3.2,
+   fig.align="center",
+   message=FALSE,
+   warning=FALSE,
+comment='',
+   autodep = TRUE)
+@
+
+<<>>=
+
+KMplot<-function(datin,time,event,group,titlein='',palette.value,
+                 break.time.value=24,legend.pos='right',legend.title='',legend.labs=NULL,
+                 x.lab,y.lab,ci.TF=FALSE,pval.xy,pval.method.xy,p.value=TRUE){
+  max.os<-max(datin[,time],na.rm=TRUE)
+  #KM plot
+  fit<-eval(parse(text=paste0("survfit(Surv(",time,",", event,")~",group,", data=datin,type='kaplan-meier',conf.type='log')")))
+  fit.sum<-summary(fit,seq(0,max.os,by=break.time.value))
+ 
+  lr.test<-eval(parse(text=paste0("survdiff(Surv(",time,",", event,")~",group,", data=datin,rho=0)")))
+  
+  lr.p<-pchisq(lr.test$chisq,df=length(lr.test[[1]])-1,lower.tail=FALSE)
+  lr.pt<-p.text(lr.p)
+  if (p.value==FALSE) lr.pt=FALSE else lr.pt=lr.pt
+  cat('----Summary statistics for survival--\n')
+  print(fit)
+  #print(fit.sum)
+  cat('\n\n')
+  cat('----Log-rank test--\n')
+  print(lr.test) 
+ 
+  #survival plot
+  ggsurv <- ggsurvplot(
+    fit,
+    data = datin, 
+    #fontsize = 3,
+    size = 0.6,  # change line size
+    palette = palette.value,
+    conf.int = FALSE,                        # Add confidence interval
+   # pval = lr.pt,  # Add p-value
+    pval=TRUE,
+    pval.method.coord=pval.method.xy,
+    pval.method =TRUE,   # add a text with the test name used for calculating the pvalue
+    pval.size=4,
+    pval.coord=pval.xy,# specifying the x and y coordinates of the p-value
+    surv.plot.height = 0.60,                 # the height of the survival plot on the grid
+    censor.shape = "+",
+    censor.size=2,
+    legend =legend.pos,  # "top", "bottom", "left", "right", "none"
+    font.legend=10,
+    legend.title = legend.title,
+    legend.labs = legend.labs,  # Change legend labels
+    ylab=y.lab,
+    xlab =x.lab,                   # customize X axis label
+    #   xlim = c(0, 3000)/365.25,
+    break.time.by=break.time.value,
+    risk.table = TRUE,                       # Add risk table
+    risk.table.col = "strata",               # Risk table color by groups
+    risk.table.height = 0.25,                # Useful to change when you have multiple groups
+    risk.table.y.text.col = TRUE,            # colour risk table text annotations
+    risk.table.y.text = TRUE,               # show bars instead of names in text annotations
+    risk.table.fontsize = 3,
+    tables.theme = theme_cleantable(plot.title = element_text(hjust = -0.5,size=5))+
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()),
+    title=titlein
+  )
+  
+  ggsurv$plot <- ggsurv$plot +
+    theme(axis.title.x=element_text(face='bold'),
+          axis.title.y=element_text(face='bold'),
+          axis.text.x=element_text(size=8,color='black',face='bold'),
+          axis.text.y=element_text(size=8,color='black',face='bold'),
+          legend.text=element_text(color='black',face="bold"),
+          legend.title=element_text(color='black',face="bold"))
+  
+  print(ggsurv)
+}
+
+p.text<-function(p) ifelse(p>0.99,'>0.99',
+                           ifelse(p<0.001,'p<0.001',paste0('p=',round(p,3))))
+
+
+@
+
+<<>>=
+path<-''
+
+load(file=paste0(path,'data/Thyroid.data.2022.Rdata'))
+
+
+library(dplyr) #top_n
+library(ggsci)
+library(broom) #for tidy
+library(survival)
+library(survminer)
+library(rms)
+library(ggplot2)
+
+
+
+my.color<-pal_lancet("lanonc")(9) #ggsci
+ 
+legend.title.v<-c('TERT mutation','TP53 mutation','PIK3CA mutation',
+                  'EPIC CAF score','MCPCOUNTER CAF score','BRAF- or RAS-like','ATS')
+
+predictor.var<-predictor.var[-4]
+@
+\clearpage
+
+\begin{itemize}
+\item Interested outcome: (1) Progression free survival (2) Overall survival
+\item Variables:'TERT mutation','TP53 mutation','PIK3CA mutation',
+                  'EPIC high','MCPCOUNTER high','BRS (positive vs. negative)', 'ATS (positive vs. negative)'
+\begin{itemize}
+
+   \item Start date: Initial.therapy.complete.date 
+   \item Event for PFS: Progression at Recur.or.progress.date or censored at date.last.followup.
+    \item Event for OS: Death at Date.of.death or censored at date.last.followup.
+   \item Cohort subgroups
+       \begin{itemize}
+          \item A: Malignant
+         \item B: Malignant well-differentiated
+       \end{itemize}
+    \end{itemize}
+ 
+ \item Methods: For each subgroup, survival curves are estimated using the Kaplan-Meier method and compared statistically using the log-rank test. Also, Cox proportional-hazards model was used to evaluate the association between the progress free time of patients and a predict variable.
+
+ \end{itemize}
+\clearpage
+ \section{Progression free survival started from initial.therapy.complete.date}
+ 
+\subsection{Malignant}
+<<include=FALSE>>=
+shortname<-'malignant'
+dataset.name<-'A: malignant'
+#d0.a.clean: malignant subgroup
+
+time<-'PFS.from.ini.therapy.complete'  #.y  means month
+
+datin=subset(d0.a.clean,select=c(predictor.var,survival.var)) ####manual
+event<-'event.PFS'
+y.lab<-"Progression Free Survival"
+
+#relevel
+datin$TERT.mutation<-relevel(datin$TERT.mutation,ref='Yes')
+datin$TP53.mutation<-relevel(datin$TP53.mutation,ref='Yes')
+datin$PIK3CA.mutation<-relevel(datin$PIK3CA.mutation,ref='Yes')
+datin$Cancer.associated.fibroblast_EPIC_high<-relevel(datin$Cancer.associated.fibroblast_EPIC_high,ref='High')
+datin$Cancer.associated.fibroblast_MCPCOUNTER_high<-relevel(datin$Cancer.associated.fibroblast_MCPCOUNTER_high,ref='High')
+datin$ATS.PN<-relevel(datin$ATS.PN,ref='Positive')
+
+
+ block.out<-NULL
+
+ ll<-length(predictor.var)
+ fig.name.v<-c('Figure 1D','Figure 1E','Figure 1F','Figure 7A','Suppl. Figure 15A', 'Suppl. Figure 2F','Figure 7C')
+  for (i in 1:ll){
+  group<-predictor.var[i]
+  legend.title<-legend.title.v[i]
+  fig.name<-fig.name.v[i]
+  group.name<-Hmisc::label(datin[,group])
+ 
+  legend.pos=c(0.76,0.22)
+  if (i%in% c(2,3)) {
+    pval.xy=c(48,0.5)
+    pval.method.xy=c(48,0.4)
+    } else {
+    pval.xy=c(1,0.2)
+    pval.method.xy=c(1,0.1)
+    }
+  if (i %in% c(1,2,3,6)) palette.value=my.color[c(2:1)]
+  if (i %in% c(4,5)) palette.value=c('green','darkgreen')
+  if (i==7) palette.value=c('#BA68C8' ,'#4A148C')
+    block.out = c(block.out, knit_child('Child.Cox.block.Rnw'))
+}
+  @
+  \Sexpr{paste(block.out, collapse = '\n')}
+
+
+   \clearpage
+ 
+
+\subsection{Malignant well-differentiated}
+<<include=FALSE>>=
+shortname<-'malignant well-differentiated'
+dataset.name<-'B: malignant well-diff'
+#d0.b.clean: malignant well-differentiated before aggression'
+datin=subset(d0.b.clean,select=c(predictor.var,survival.var)) ####manual
+event<-'event.PFS'
+
+#relevel
+datin$TERT.mutation<-relevel(datin$TERT.mutation,ref='Yes')
+datin$TP53.mutation<-relevel(datin$TP53.mutation,ref='Yes')
+datin$PIK3CA.mutation<-relevel(datin$PIK3CA.mutation,ref='Yes')
+datin$Cancer.associated.fibroblast_EPIC_high<-relevel(datin$Cancer.associated.fibroblast_EPIC_high,ref='High')
+datin$Cancer.associated.fibroblast_MCPCOUNTER_high<-relevel(datin$Cancer.associated.fibroblast_MCPCOUNTER_high,ref='High')
+datin$ATS.PN<-relevel(datin$ATS.PN,ref='Positive')
+
+ block.out<-NULL
+
+ fig.name.v<-c('Figure 7B','Suppl. Figure 15B','Figure 2C','Figure 7D')
+  for (i in 4:7){
+  group<-predictor.var[i]
+  legend.title<-legend.title.v[i]
+  fig.name<-fig.name.v[i-3]
+  group.name<-Hmisc::label(datin[,group])
+  
+    legend.pos=c(0.78,0.22)
+    pval.xy=c(1,0.2)
+    pval.method.xy=c(1,0.1)
+
+    if (i %in% c(4,5)) palette.value=c('green','darkgreen')
+    if (i==6) palette.value=my.color[c(2:1)]
+   if (i==7) palette.value=c('#BA68C8' ,'#4A148C')
+    
+    block.out = c(block.out, knit_child('Child.Cox.block.Rnw'))
+
+  }
+
+  @
+  \Sexpr{paste(block.out, collapse = '\n')}
+
+
+   \clearpage
+\section{Overall survival started from initial.therapy.complete.date}
+
+\subsection{Malignant}
+<<include=FALSE>>=
+shortname<-'malignant'
+dataset.name<-'A: malignant'
+time<-'OS.from.ini.therapy.complete'  #.y  means month
+
+datin=subset(d0.a.clean,select=c(predictor.var,survival.var)) ####manual
+event<-'event.OS'
+y.lab<-"Overall Survival"
+
+datin$TERT.mutation<-relevel(datin$TERT.mutation,ref='Yes')
+datin$TP53.mutation<-relevel(datin$TP53.mutation,ref='Yes')
+datin$PIK3CA.mutation<-relevel(datin$PIK3CA.mutation,ref='Yes')
+#	Each marker+gender+age
+ block.out<-NULL
+ palette.value=my.color[c(2:1)]
+  for (i in 1:3){
+  group<-predictor.var[i]
+  legend.title<-legend.title.v[i]
+  fig.name<-'Suppl. Figure 1A'
+  group.name<-Hmisc::label(datin[,group])
+
+    legend.pos=c(0.5,0.21)
+    pval.xy=c(1,0.2)
+    pval.method.xy=c(1,0.1)
+    
+    block.out = c(block.out, knit_child('Child.Cox.block.Rnw'))
+
+  }
+
+  @
+  \Sexpr{paste(block.out, collapse = '\n')}
+
+
+   \clearpage
+ <<>>=
+R.version.string
+@
+\end{document}

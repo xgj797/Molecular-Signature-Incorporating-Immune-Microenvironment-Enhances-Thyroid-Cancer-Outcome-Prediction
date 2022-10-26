@@ -1,0 +1,17 @@
+
+\subsubsection{\Sexpr{fig.name}: \Sexpr{group.name}}
+
+ <<echo = FALSE,fig.width=4,fig.height=4,fig.cap=paste0(fig.name,': PFS by ', group.name),fig.pos='h'>>=
+
+ 
+     KMplot(datin=datin,time=time,event=event,group=group,palette.value=palette.value,
+                 break.time.value=24,
+                 legend.title=legend.title,
+                 legend.labs=levels(datin[,group]),
+                 x.lab= "Months",y.lab=y.lab,
+                 ci.TF=FALSE,legend.pos=legend.pos,pval.xy=pval.xy,pval.method.xy=pval.method.xy,p.value=TRUE)
+
+
+  @
+
+\clearpage

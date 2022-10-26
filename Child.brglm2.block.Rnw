@@ -1,0 +1,54 @@
+
+\subsection{\Sexpr{x.var.name}}
+ <<>>=
+
+ temp<-temp[complete.cases(temp),]
+
+#Maximum penalized likelihood with Jeffreys prior penatly
+fit<-eval(parse(text=paste0("glm(",y.var,"~",x.var,",family=binomial(logit),data=temp,method='brglmFit',type='MPL_Jeffreys')")))  
+
+  sum.fit<-summary(fit)
+  cat('---Logistic regression with the maximum penalized likelihood---\n')
+  print(summary(fit))
+  
+  cat('\n')
+ 
+  coef.ci<-confint.default(fit)
+  
+  temp.t<-sum.fit$coefficients[2,]
+  table.out<-data.frame(Variable=x.var,coefficient=round(temp.t[[1]],4),se=round(temp.t[[2]],3),Wald.Z=temp.t[[3]],p=temp.t[[4]])
+  table.out$OR<-exp(table.out$coefficient)
+  table.out$LowerCI<-exp(coef.ci[2,1])
+  table.out$UpperCI<-exp(coef.ci[2,2])
+
+ cat('---Odd ratio with 95% CI---\n')
+ table.out[,c('Variable', 'OR','LowerCI','UpperCI')]
+ 
+
+  IQR.OR.text<-paste0(round(table.out$OR,3),' (',round(table.out$LowerCI,3),', ',round(table.out$UpperCI,3),')')
+ 
+  @
+  
+ <<>>=
+  pred.fit<-predict(fit,type='response') #gives the predicted probabilities
+  obs.y<-temp[,y.var]
+  roc.out <- pROC::roc(response = obs.y, predictor = pred.fit,ci=TRUE,ci.auc=TRUE,direction='<')
+ 
+  auc.value<-round(roc.out$ci[2],3)
+  auc.lower<-round(roc.out$ci[1],3)
+  auc.upper<-round(roc.out$ci[3],3)
+   auc.text<-paste0(auc.value,' (',auc.lower,', ',auc.upper,')')
+
+  auc.text1<-paste0('AUC: ',auc.text)
+
+   out.c<-data.frame(independent=x.var,auc=auc.value,lower=auc.lower,upper=auc.upper)
+ 
+   table.out<-cbind(table.out,OR.CI=IQR.OR.text,auc=auc.text,dataset=dataset.name)
+
+
+   
+  @
+
+
+\clearpage
+
