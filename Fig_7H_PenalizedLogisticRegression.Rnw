@@ -1,0 +1,269 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{setspace,relsize}  
+\usepackage{longtable} 
+\usepackage[pdftex]{lscape}
+\usepackage[margin=0.4in,bottom=0.5in,includehead,includefoot]{geometry}  
+\usepackage{amssymb,amsmath,bm,graphicx,epsfig,array,color} 
+\usepackage{hyperref}
+\usepackage{alltt}
+\usepackage{booktabs}
+
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+
+
+\title{Thyroid - association between aggression and TERTp TP53PIK3CA+ATS}
+\author{Sheau-Chiann Chen and Fei Ye} 
+\date{}
+%-----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\clearpage
+
+%-----------------------------------------------------------------------------------------
+
+
+<<setup, include=FALSE, echo=FALSE>>=
+library(knitr)
+opts_knit$set(progress = TRUE, verbose = FALSE, eval.after = c("fig.cap"))
+opts_chunk$set(
+   cache = FALSE,
+   echo = FALSE,
+   tidy = TRUE,
+   dev="pdf",
+  fig.path="graphics/",
+   fig.keep="high",
+   fig.show="hold",
+   fig.height=3,
+   fig.width=3.2,
+   fig.align="center",
+   message=FALSE,
+   warning=FALSE,
+comment='',
+   autodep = TRUE)
+@
+
+<<>>=
+ my.roc.plot<-function(roc.out.list,auc.text.list,roc.color,auc.x,auc.y){
+  par(pty='s')
+  plot(roc.out.list[[1]],col=roc.color[1],legacy.axes=TRUE,print.auc=FALSE,asp=NA)
+  text(auc.x,auc.y,labels=auc.text.list[[1]],cex=1,col=roc.color[1])
+  
+  ll<-length(roc.out.list)
+  if (ll>1) {
+  for (i in 2:ll){
+  lines(roc.out.list[[i]],col=roc.color[i],legacy.axes=TRUE,print.auc=FALSE)
+    text(auc.x,auc.y-(i-1)*0.07,labels=auc.text.list[[i]],cex=1,col=roc.color[i])
+  }
+  }
+  
+ }
+
+@
+
+<<>>=
+path<-''
+
+load(file=paste0(path,'data/Thyroid.data.2022.Rdata'))
+
+library(ggsci)
+library(pROC) #roc
+library(kableExtra)
+library(rms)
+library(brglm2)
+options(knitr.kable.NA = '')
+
+y.var<-'Aggressive.disease'
+
+x.var.v<-c('TERT.TP53.PIK3CA.mut','ATS.PN')
+predictor.v<-c('TERT.TP53.PIK3CA.mut','TERT.TP53.PIK3CA.mut+ATS.PN')
+x.var.name.v<-c('TERT TP53 PIK3CA mut','TERT TP53 PIK3CA mut+ATS')
+ll<-length(predictor.v)
+my.color<-pal_lancet("lanonc")(9) #ggsci
+roc.color<-my.color[c(1,6)]
+
+Final.table<-NULL# for all coefficient
+
+@
+
+
+\begin{itemize}
+\item Goal: evaluate if a predictor ATS (binary) that has an additive effect can merely be added to the TERT.TP53.PIK3CA.mut terms in a model to determine its effect on the independent variable.
+
+    \begin{itemize}
+   \item Subgroup data
+       \begin{itemize}
+         \item Malignant
+         \item Malignant well-differentiated
+         \item Malignant well-differentiated before aggression
+       \end{itemize}
+    \end{itemize}
+   
+   \item Model
+     \begin{itemize}
+     \item (1) aggressive disease $\sim$ TP53, TERTp, and PIK3CA
+     \item (2) aggressive disease $\sim$ TP53, TERTp, and PIK3CA + ATS (positive vs. negative)
+     \end{itemize}
+\item Methods: logistic regression was used to evaluate the association between aggressive disease and predictor(s). Likelihood ratio test assesses the goodness of fit of two competing statistical models (1 vs. 2) based on the ratio of their likelihoods. To deal with zero or rare counts, maximum penalized likelihood with Jeffreys prior penalty was used to estimate the coefficient and its variance.
+Area under the ROC curve was used to assess the discrimination of a fitted logistic model.
+
+ \end{itemize}
+ 
+\clearpage
+\section{Malignant}
+<<include=FALSE>>=
+shortname<-'malignant'
+dataset.name<-'A: malignant'
+#d0.a.clean: malignant subgroup
+datin<-subset(d0.a.clean,select=c(y.var,x.var.v))
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+fit.list<-roc.out.list
+block.out<-NULL
+
+x.var.v<-c("TERT.TP53.PIK3CA.mut","ATS.PN")
+temp<-datin[,c(x.var.v,y.var)]
+ 
+for (i in 1:ll){
+x.var<-predictor.v[i]
+x.var.name<-x.var.name.v[i]
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+ t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  fit.list[[i]]<-fit
+  Final.table<-rbind(Final.table,table.out)
+}
+
+
+@
+ \Sexpr{paste(block.out, collapse = '\n')}
+ 
+ \clearpage
+\subsection{Goodness of fit of two competing models}
+%Likelihood ratio test assesses the goodness of fit of two competing statistical models based on the ratio of their likelihoods
+<<>>=
+lrtest(fit.list[[1]],fit.list[[2]])
+@
+
+\subsection{Figure 7H: AUC comparisons in malignant subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('Figure 7H: AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.35;auc.y=0.10
+
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+    
+      my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+     
+@
+\clearpage
+
+\section{Malignant well-differentiated}
+<<include=FALSE>>=
+shortname<-'malignant well-differentiated'
+dataset.name<-'B: malignant well-differentiated'
+#d0.b.clean: malignant well-differentiated before aggression'
+datin<-subset(d0.b.clean,select=c(y.var,x.var.v))
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+fit.list<-roc.out.list
+block.out<-NULL
+
+x.var.v<-c("TERT.TP53.PIK3CA.mut","ATS.PN")
+temp<-datin[,c(x.var.v,y.var)]
+
+for (i in 1:ll){
+x.var<-predictor.v[i]
+x.var.name<-x.var.name.v[i]
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+ t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  fit.list[[i]]<-fit
+  Final.table<-rbind(Final.table,table.out)
+}
+
+
+@
+ \Sexpr{paste(block.out, collapse = '\n')}
+ 
+ \clearpage
+\subsection{Goodness of fit of two competing models}
+%Likelihood ratio test assesses the goodness of fit of two competing statistical models based on the ratio of their likelihoods
+<<>>=
+lrtest(fit.list[[1]],fit.list[[2]])
+@
+
+\subsection{Figure 7H: AUC comparisons in malignant well-differentiated subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('Figure 7H: AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.35;auc.y=0.10
+
+   kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+
+\clearpage
+\section{Malignant well-differentiated before aggressive disease}
+<<include=FALSE>>=
+shortname<-'malignant well-differentiated before aggressive disease'
+dataset.name<-'D: malignant well-differentiated before aggressive disease'
+#d0.d.clean: Malignant well-differentiated before aggression
+datin<-d0.d.clean
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+fit.list<-roc.out.list
+block.out<-NULL
+
+x.var.v<-c("TERT.TP53.PIK3CA.mut","ATS.PN")
+temp<-datin[,c(x.var.v,y.var)]
+
+for (i in 1:ll){
+x.var<-predictor.v[i]
+x.var.name<-x.var.name.v[i]
+
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+ t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  fit.list[[i]]<-fit
+  Final.table<-rbind(Final.table,table.out)
+}
+
+
+@
+ \Sexpr{paste(block.out, collapse = '\n')}
+ 
+ \clearpage
+\subsection{Goodness of fit of two competing models}
+%Likelihood ratio test assesses the goodness of fit of two competing statistical models based on the ratio of their likelihoods
+<<>>=
+lrtest(fit.list[[1]],fit.list[[2]])
+@
+
+\subsection{Figure 7H: AUC comparisons in malignant well-differentiated before aggressive disease subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('Figure 7H: AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.35;auc.y=0.10
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+
+\clearpage
+ <<>>=
+R.version.string
+@
+
+\end{document}

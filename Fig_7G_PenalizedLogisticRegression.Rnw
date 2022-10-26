@@ -1,0 +1,323 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{setspace,relsize} 
+\usepackage{longtable}  
+\usepackage[pdftex]{lscape}
+\usepackage[margin=0.4in,bottom=0.5in,includehead,includefoot]{geometry}  
+\usepackage{amssymb,amsmath,bm,graphicx,epsfig,array,color} 
+\usepackage{hyperref}
+\usepackage{alltt}
+\usepackage{booktabs}
+
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+
+\title{Thyroid - association between aggressive and a predictor}
+\author{Sheau-Chiann Chen and Fei Ye} 
+\date{ }
+
+%-----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\clearpage
+
+%-----------------------------------------------------------------------------------------
+
+
+<<setup, include=FALSE, echo=FALSE>>=
+library(knitr)
+opts_knit$set(progress = TRUE, verbose = FALSE, eval.after = c("fig.cap"))
+opts_chunk$set(
+   cache = FALSE,
+   echo = FALSE,
+   tidy = TRUE,
+   dev="pdf",
+  fig.path="graphics/",
+   fig.keep="high",
+   fig.show="hold",
+   fig.height=3,
+   fig.width=3.2,
+   fig.align="center",
+   message=FALSE,
+   warning=FALSE,
+comment='',
+   autodep = TRUE)
+@
+
+<<>>=
+ my.roc.plot<-function(roc.out.list,auc.text.list,roc.color,auc.x,auc.y){
+  par(pty='s')
+  plot(roc.out.list[[1]],col=roc.color[1],legacy.axes=TRUE,print.auc=FALSE,asp=NA)
+  text(auc.x,auc.y,labels=auc.text.list[[1]],cex=1,col=roc.color[1])
+  
+  ll<-length(roc.out.list)
+  if (ll>1) {
+  for (i in 2:ll){
+  lines(roc.out.list[[i]],col=roc.color[i],legacy.axes=TRUE,print.auc=FALSE)
+    text(auc.x,auc.y-(i-1)*0.06,labels=auc.text.list[[i]],cex=1,col=roc.color[i])
+  }
+  }
+  
+ }
+@
+
+<<>>=
+path<-''
+
+load(file=paste0(path,'data/Thyroid.data.2022.Rdata'))
+
+
+library(ggsci)
+library(pROC) #roc
+library(kableExtra)
+library(rms)
+library(brglm2)
+options(knitr.kable.NA = '')
+
+y.var<-'Aggressive.disease'
+
+x.var.v<-c('TERT.TP53.PIK3CA.mut','Cancer.associated.fibroblast_EPIC_high','Cancer.associated.fibroblast_MCPCOUNTER_high','BRS.PN','ATS.PN')
+x.var.name.v<-c('TERT TP53 PIK3CA mut','EPIC CAF','MCPCOUNTER CAF','BRS','ATS')
+
+ll<-length(x.var.v)
+my.color<-pal_lancet("lanonc")(9) #ggsci
+roc.color<-my.color[c(1:ll)]
+
+Final.table<-NULL# for all coefficient
+
+
+@
+
+
+\begin{itemize}
+\item Goal: aggressive disease analysis with predictor "TP53, TERTp, and PIK3CA", "EPIC CAF (Cancer associated fibroblast EPIC high)", "MCPCOUNTER CAF high (Cancer associated fibroblast MCPCOUNTER)", "BRS (positive vs. negative)", "ATS (positive vs. negative)"
+
+    \begin{itemize}
+
+   \item Subgroup data
+       \begin{itemize}
+         \item A: Malignant
+         \item B: Malignant well-differentiated
+         \item C: PTC/IFVPTC
+         \item D: Malignant well-differentiated before aggression
+         \item E: PTC/IFVPTC before aggression
+       \end{itemize}
+    \end{itemize}
+
+\item Methods: logistic regression was used to evaluate the association between aggressive disease and a predictor. To deal with rare counts in a 2 by 2 contingency table, maximum penalized likelihood with Jeffreys prior penalty was used to estimate the coefficient and its variance.
+Area under the ROC curve was used to assess the discrimination of a fitted logistic model.
+
+ \end{itemize}
+ 
+\clearpage
+
+\section{Malignant}
+<<include=FALSE>>=
+shortname<-'malignant'
+dataset.name<-'A: all local malignant'
+#d0.a.clean: malignant subgroup
+datin<-subset(d0.a.clean,select=c(y.var,x.var.v))
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-x.var.v[i]
+x.var.name<-x.var.name.v[i]
+temp<-datin[,c(x.var,y.var)]
+
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+ t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  Final.table<-rbind(Final.table,table.out)
+}
+
+
+@
+ \Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{Figure 7G: AUC comparisons in malignant subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('Figure 7G: AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.32;auc.y=0.30
+
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+
+  
+    
+      my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+     
+@
+
+
+\clearpage
+\section{Malignant well-differentiated}
+<<include=FALSE>>=
+shortname<-'malignant well-differentiated'
+dataset.name<-'B: local malignant well-diff'
+#d0.b.clean: malignant well-differentiated before aggression'
+datin<-subset(d0.b.clean,select=c(y.var,x.var.v))
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-x.var.v[i]
+x.var.name<-x.var.name.v[i]
+temp<-datin[,c(x.var,y.var)]
+
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+   Final.table<-rbind(Final.table,table.out)
+}
+
+@
+\Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{Figure 7G: AUC comparisons in malignant well-differentiated}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('Figure 7G: AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.32;auc.y=0.30
+
+   kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+
+\clearpage
+\section{PTC/IFVPTC}
+<<include=FALSE>>=
+shortname<-'PTC/IFVPTC'
+dataset.name<-'C: PTC/IFVPTC'
+#d0.c.clean: PTC/IFVPTC'
+datin<-subset(d0.c.clean,select=c(y.var,x.var.v))
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-x.var.v[i]
+x.var.name<-x.var.name.v[i]
+temp<-datin[,c(x.var,y.var)]
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+   Final.table<-rbind(Final.table,table.out)
+}
+
+@
+\Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{AUC comparisons in \Sexpr{shortname} subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.3;auc.y=0.30
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+   
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+\clearpage
+\clearpage
+\section{Malignant well-differentiated before aggression}
+<<include=FALSE>>=
+shortname<-'malignant well-differentiated before aggressive disease'
+dataset.name<-'D: malignant well-differentiated before aggressive disease'
+#d0.d.clean: Malignant well-differentiated before aggression
+datin<-d0.d.clean
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-x.var.v[i]
+x.var.name<-x.var.name.v[i]
+temp<-datin[,c(x.var,y.var)]
+
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+   Final.table<-rbind(Final.table,table.out)
+}
+
+@
+\Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{Figure 7G: AUC comparisons in malignant well-differentiated before aggression subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('Figure 7G: AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.32;auc.y=0.3
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+   
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+
+\clearpage
+\clearpage
+\section{PTC/IFVPTC before aggressive disease}
+<<include=FALSE>>=
+shortname<-'PTC/IFVPTC before aggressive disease'
+dataset.name<-'E: PTC/IFVPTC before aggressive disease'
+#d0.e.clean: PTC/IFVPTC before aggressive disease'
+datin<-subset(d0.e.clean,select=c(y.var,x.var.v))
+
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+block.out<-NULL
+
+for (i in 1:ll){
+x.var<-x.var.v[i]
+x.var.name<-x.var.name.v[i]
+temp<-datin[,c(x.var,y.var)]
+
+block.out = c(block.out, knit_child(paste0(path,'Child.brglm2.block.Rnw')))
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+    Final.table<-rbind(Final.table,table.out)
+}
+
+@
+ \Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{AUC comparisons in \Sexpr{shortname} subgroup}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0('AUC comparisons in ', shortname, ' subgroup'),fig.pos='h!'>>=
+auc.x=0.3;auc.y=0.3
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+  
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+
+
+\clearpage
+
+
+<<>>=
+#Odds ratio for Supplement Figure 15 F: forest plot
+    write.csv(Final.table,file=paste0(path,'aggressive.OR.csv'),na='',row.names=FALSE)
+
+    @
+\clearpage
+ <<>>=
+R.version.string
+@
+
+\end{document}
