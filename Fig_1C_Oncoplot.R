@@ -27,7 +27,7 @@ library(ComplexHeatmap)
 library(circlize) # R package for making gradient heatmap annotations
 
 # Set your working directory
-#setwd("_")
+setwd("_")
 
 #### 2. Read in Data ####
 # read maf file
