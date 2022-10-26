@@ -17,6 +17,6 @@
 **/Visium_Analysis**
 - folder containing Visium spatial transcriptomics analysis code
 
-**/Additional_Survival_Analysis_and_Aggression_Prediction Code**
+**/Additional_Prediction_Code**
 
 
