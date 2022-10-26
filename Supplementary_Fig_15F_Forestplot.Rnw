@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{setspace,relsize}  % for latex(describe()) (Hmisc package)
+
+%\usepackage{relsize}  % for latex(describe()) (Hmisc package)
+\usepackage{longtable}  % for tables that break over multiple pages
+\usepackage[pdftex]{lscape}
+\usepackage[margin=0.4in,bottom=0.5in,includehead,includefoot]{geometry}  % sets 0.5-inch margins
+\usepackage{amssymb,amsmath,bm,graphicx,epsfig,array,color} % math 
+%\usepackage{amssymb,amsmath,bm,graphicx,epsfig,topcapt,colortbl,array,color} % math formatting
+\usepackage{hyperref}
+\usepackage{alltt}
+\usepackage{booktabs}
+
+\title{Forestplot (Supplement Figure 15F)}
+\author{Sheau-Chiann Chen and Fei Ye} 
+\date{}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+\maketitle
+%\tableofcontents
+
+%\clearpage
+
+%-----------------------------------------------------------------------------------------
+
+<<setup, include=FALSE, echo=FALSE>>=
+library(knitr)
+opts_knit$set(progress = TRUE, verbose = FALSE, eval.after = c("fig.cap"))
+opts_chunk$set(
+   cache = FALSE,
+   echo = FALSE,
+   tidy = TRUE,
+   dev="pdf",
+ #dev="win.metafile", #(to PI only use at final)
+  fig.path="graphics/",
+#   out.width=".6\\textwidth",
+   fig.keep="high",
+   fig.show="hold",
+   fig.height=3,
+   fig.width=3.2,
+   fig.align="center",
+   message=FALSE,
+   warning=FALSE,
+comment='',
+   autodep = TRUE)
+@
+
+
+<<>>=
+path<-''
+
+library(ggplot2)
+library(dplyr) #top_n
+library(ggsci)
+
+x.var.v<-c('TERT.TP53.PIK3CA.mut','Cancer.associated.fibroblast_EPIC_high','Cancer.associated.fibroblast_MCPCOUNTER_high','BRS.PN','ATS.PN')
+
+legend.title.v<-c('TERT TP53 PIK3CA mut','EPIC CAF','MCPCOUNTER CAF','BRS','ATS')
+
+ll<-length(legend.title.v)
+my.color<-pal_lancet("lanonc")(9) #ggsci
+palette.value<-my.color[c(1:ll)]
+
+library(ggforestplot)
+
+@
+
+
+\begin{itemize}
+\item Forest plot based on logistic regression model by comparing the following variables: "TP53 TERTp and PIK3CA mut", "EPIC CAF (Cancer associated fibroblast EPIC high)", "MCPCOUNTER CAF (Cancer associated fibroblast MCPCOUNTER)", "BRS", "ATS"
+\item Outcome: aggressive disease
+   \item Subgroup data
+       \begin{itemize}
+         \item A: Malignant
+         \item B: Malignant Well-differentiated
+         \item C: PTC/IFVPTC
+         \item D: Before Aggressive Disease
+         \item E: PTC/IFVPTC Before Aggressive Disease
+       \end{itemize}
+  
+\end{itemize}
+<<>>=
+ my.forestplot<-function(datin,estimate,lower,upper,palette.value,legend.title.v){
+  
+  datin$subgroup<-sapply(X=strsplit(as.character(datin$dataset), split=":"), FUN=function(x) x[[1]])
+  datin$Estimate<-datin[,estimate]
+  datin$LowerCI<-datin[,lower]
+  datin$UpperCI<-datin[,upper]
+
+    datin.out<-subset(datin,select=c("subgroup","Variable","coefficient","se","Wald.Z","p","OR.CI"))
+    names(datin.out)<-c("Subgroup","Variable","Coefficient","SE","Wald.Z","p","Odds ratio (95 CI)")
+    x.labsname<-'Odds ratio'
+    
+  datin$Variable<-factor(datin$Variable,levels=rev(unique(datin$Variable)),
+                         labels=rev(legend.title.v))
+
+  ggplot2::ggplot(datin, aes(x = Estimate, y = Variable))+
+    theme_forest() +
+    scale_fill_manual(values=palette.value)+
+    scale_colour_manual(values=palette.value)+
+    geom_stripes()+
+    geom_vline(xintercept = 1, linetype = "solid", size = 0.4, colour = "darkgray")+
+    geom_effect(ggplot2::aes(xmin =LowerCI, xmax =UpperCI,color=subgroup),
+                position = ggstance::position_dodgev(height = 0.5))+
+    coord_cartesian(xlim=c(0,60))+
+    labs(x=x.labsname,colour="Subgroup")
+}
+@
+
+<<results='asis',fig.height=6,fig.width=6, fig.cap=''>>=
+
+ #OR were calculated based on Fig7G.PenalizedLogisticRegression.rnw
+data.name<-'aggressive.OR.csv'
+
+datin<-read.csv(paste0(path,data.name),header = TRUE,
+             sep = ",", as.is=TRUE)
+
+my.forestplot(datin=datin,estimate='OR',lower='LowerCI',upper='UpperCI',palette.value=palette.value,legend.title.v=legend.title.v)
+  
+@
+\clearpage
+
+ <<>>=
+R.version.string
+@
+\end{document}
