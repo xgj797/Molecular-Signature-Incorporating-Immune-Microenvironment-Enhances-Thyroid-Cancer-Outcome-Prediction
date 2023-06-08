@@ -10,7 +10,6 @@ library(cowplot)
 # Set your working directory
 setwd("_")
 
-
 # Load Data
 ClinicalData <- read_csv("VUMC.cohort.GX_9-15-22_for-Fei.csv") # All Data
 ClinicalData <- as_tibble(ClinicalData)
@@ -43,87 +42,26 @@ for(i in 1:nrow(ClinicalData_localdisease_Malignant)){
 
 ClinicalData_localdisease_Malignant$ProgressionFree_Length <- ClinicalData_localdisease_Malignant$ProgressionFree_Length/(365/12)
 
-
 # Subset out samples if NA for progressionfree_length
 ClinicalData_localdisease_Malignant <- ClinicalData_localdisease_Malignant  %>% subset(!is.na(ClinicalData_localdisease_Malignant$ProgressionFree_Length))
-
 
 # Look at PFS in known mutations
 PFS_TERT.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(TERT.mutation))
 PFS_TP53.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(TP53.mutation))
 PFS_PIK3CA.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(PIK3CA.mutation))
 
+# Look at PFS in MAP score (high vs low)
+PFS_MAPscore_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(`MAP score`))
+
 # Look at PFS in BRS
 PFS_BRS_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(BRS))
 
-# Look at PFS in MAP score (high vs low)
-PFS_Aggression_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(`MAP score`))
-
 # PFS Plots
-PFS_BRS_All_localdiseaseMalignant <- mutate(PFS_BRS_All_localdiseaseMalignant, Cat=ifelse(PFS_BRS_All_localdiseaseMalignant$BRS > 0, "RAS-Like", "BRAF-Like"))
-PFS_TERT.TP53.PIK3CA.mut_All_localdiseaseMalignant <- mutate(PFS_TERT.TP53.PIK3CA.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_TERT.TP53.PIK3CA.mut_All_localdiseaseMalignant$TERT.TP53.PIK3CA.mut == 1, "Mutant", "Not Mutant"))
 PFS_TERT.mut_All_localdiseaseMalignant <- mutate(PFS_TERT.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_TERT.mut_All_localdiseaseMalignant$TERT.mutation == 1, "Mutant", "Not Mutant"))
 PFS_TP53.mut_All_localdiseaseMalignant <- mutate(PFS_TP53.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_TP53.mut_All_localdiseaseMalignant$TP53.mutation == 1, "Mutant", "Not Mutant"))
 PFS_PIK3CA.mut_All_localdiseaseMalignant <- mutate(PFS_PIK3CA.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_PIK3CA.mut_All_localdiseaseMalignant$PIK3CA.mutation == 1, "Mutant", "Not Mutant"))
-PFS_CAF_EPIC_All_localdiseaseMalignant <- mutate(PFS_CAF_EPIC_All_localdiseaseMalignant, Cat=ifelse(PFS_CAF_EPIC_All_localdiseaseMalignant$`Cancer associated fibroblast_EPIC_high` == 1, "High", "Low"))
-PFS_CAF_MCPCOUNTER_All_localdiseaseMalignant <- mutate(PFS_CAF_MCPCOUNTER_All_localdiseaseMalignant, Cat=ifelse(PFS_CAF_MCPCOUNTER_All_localdiseaseMalignant$`Cancer associated fibroblast_MCPCOUNTER_high` == 1, "High", "Low"))
-PFS_Aggression_All_localdiseaseMalignant <- mutate(PFS_Aggression_All_localdiseaseMalignant, Cat=ifelse(PFS_Aggression_All_localdiseaseMalignant$`MAP score` >= 0, "High", "Low"))
-
-
-### BRS PFS
-#Survival curve calculation
-fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_BRS_All_localdiseaseMalignant)
-print(fit)
-
-# Most basic plot
-ggsurvplot(fit, data=PFS_BRS_All_localdiseaseMalignant)
-
-# More involved, customized plot
-PFS_Plot <- ggsurvplot(fit,
-                       data=PFS_BRS_All_localdiseaseMalignant,
-                       pval = TRUE, pval.method = TRUE, conf.int = FALSE,
-                       risk.table = TRUE, 
-                       risk.table.col = "strata", 
-                       legend = c(.70,.20), # Move the legend
-                       pval.coord = c(.15,.20), # Move the p-value
-                       pval.size = 8,
-                       pval.method.coord = c(.15,.10), # Move the p-value method
-                       font.x = c(23, "bold", "black"),
-                       font.y = c(23, "bold", "black"),
-                       font.title = c(25, "bold", "black"),
-                       # linetype = "strata", # Change line type by groups
-                       # surv.median.line = "hv", # Specify median survival
-                       ggtheme = theme_classic(),
-                       font.tickslab=c(17, "bold", "black"),
-                       font.legend = c(20, "bold", "black"),
-                       risk.table.fontsize = 7,
-                       risk.table.y.text = FALSE,
-                       risk.table.legend = FALSE,
-                       legend.title = "BRAF or RAS-like",
-                       title = "BRAF-RAS Score PFS",
-                       legend.labs = c("BRAF-Like", "RAS-Like"),
-                       tables.height = .33,
-                       break.time.by = 24,
-                       palette = c("red", "#2E9FDF", "#86AA00"))+ # Can switch plot color palette order
-  labs(y = "Progression Free Survival", x = "Months")  
-PFS_Plot$plot <- PFS_Plot$plot + theme(panel.border = element_rect(colour = "black", size = 2, fill = NA))
-PFS_Plot$table <- PFS_Plot$table + 
-  theme(plot.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.text = element_text(size = 20, color = "black", face = "bold"),
-        legend.position = "none")+
-  theme(plot.margin = margin(0.1,1,0.1,0.1, "cm"))+ #gives space for last x-axis tick label, avoiding cutoff
-  labs(y = NULL) 
-PFS_Plot
-
-# Saving the plots with ggsave
-p1 = PFS_Plot$plot
-p2 = PFS_Plot$table
-plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_BRS_PFS.png", 
-       plot = plotp, 
-       width = 7, height = 7,
-       dpi = 600)
+PFS_MAPscore_All_localdiseaseMalignant <- mutate(PFS_MAPscore_All_localdiseaseMalignant, Cat=ifelse(PFS_MAPscore_All_localdiseaseMalignant$`MAP score` >= 0, "High", "Low"))
+PFS_BRS_All_localdiseaseMalignant <- mutate(PFS_BRS_All_localdiseaseMalignant, Cat=ifelse(PFS_BRS_All_localdiseaseMalignant$BRS > 0, "RAS-Like", "BRAF-Like"))
 
 
 ### TERTp
@@ -294,17 +232,73 @@ ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_PIK3CA_PFS.png",
        dpi = 600)
 
 
-### MAP score high/low
+### BRS PFS
 #Survival curve calculation
-fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_Aggression_All_localdiseaseMalignant)
+fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_BRS_All_localdiseaseMalignant)
 print(fit)
 
 # Most basic plot
-ggsurvplot(fit, data=PFS_Aggression_All_localdiseaseMalignant)
+ggsurvplot(fit, data=PFS_BRS_All_localdiseaseMalignant)
 
 # More involved, customized plot
 PFS_Plot <- ggsurvplot(fit,
-                       data=PFS_Aggression_All_localdiseaseMalignant,
+                       data=PFS_BRS_All_localdiseaseMalignant,
+                       pval = TRUE, pval.method = TRUE, conf.int = FALSE,
+                       risk.table = TRUE, 
+                       risk.table.col = "strata", 
+                       legend = c(.70,.20), # Move the legend
+                       pval.coord = c(.15,.20), # Move the p-value
+                       pval.size = 8,
+                       pval.method.coord = c(.15,.10), # Move the p-value method
+                       font.x = c(23, "bold", "black"),
+                       font.y = c(23, "bold", "black"),
+                       font.title = c(25, "bold", "black"),
+                       # linetype = "strata", # Change line type by groups
+                       # surv.median.line = "hv", # Specify median survival
+                       ggtheme = theme_classic(),
+                       font.tickslab=c(17, "bold", "black"),
+                       font.legend = c(20, "bold", "black"),
+                       risk.table.fontsize = 7,
+                       risk.table.y.text = FALSE,
+                       risk.table.legend = FALSE,
+                       legend.title = "BRAF or RAS-like",
+                       title = "BRAF-RAS Score PFS",
+                       legend.labs = c("BRAF-Like", "RAS-Like"),
+                       tables.height = .33,
+                       break.time.by = 24,
+                       palette = c("red", "#2E9FDF", "#86AA00"))+ # Can switch plot color palette order
+  labs(y = "Progression Free Survival", x = "Months")  
+PFS_Plot$plot <- PFS_Plot$plot + theme(panel.border = element_rect(colour = "black", size = 2, fill = NA))
+PFS_Plot$table <- PFS_Plot$table + 
+  theme(plot.title = element_text(size = 23, color = "black", face = "bold"),
+        axis.title = element_text(size = 23, color = "black", face = "bold"),
+        axis.text = element_text(size = 20, color = "black", face = "bold"),
+        legend.position = "none")+
+  theme(plot.margin = margin(0.1,1,0.1,0.1, "cm"))+ #gives space for last x-axis tick label, avoiding cutoff
+  labs(y = NULL) 
+PFS_Plot
+
+# Saving the plots with ggsave
+p1 = PFS_Plot$plot
+p2 = PFS_Plot$table
+plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
+ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_BRS_PFS.png", 
+       plot = plotp, 
+       width = 7, height = 7,
+       dpi = 600)
+
+
+### MAP score high/low
+#Survival curve calculation
+fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_MAPscore_All_localdiseaseMalignant)
+print(fit)
+
+# Most basic plot
+ggsurvplot(fit, data=PFS_MAPscore_All_localdiseaseMalignant)
+
+# More involved, customized plot
+PFS_Plot <- ggsurvplot(fit,
+                       data=PFS_MAPscore_All_localdiseaseMalignant,
                        pval = TRUE, pval.method = TRUE, conf.int = FALSE,
                        risk.table = TRUE, 
                        risk.table.col = "strata", 
