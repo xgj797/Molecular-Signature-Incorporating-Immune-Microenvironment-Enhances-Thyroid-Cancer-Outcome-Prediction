@@ -6,7 +6,7 @@
 
 #### Table of Contents ####
 # 1. Load packages
-# 2. Read maf file
+# 2. Read maf file from George
 # 3. Change clinical data of interest to numerics -> this allows for them to be plotted as numerics
 # 4. Subset maf to samples of interest
 # 5. Use maf tools to print a matrix to feed into ComplexHeatmap's oncoprint function
@@ -17,8 +17,6 @@
 # 10. Formatting mutation grid of ComplexHeatmap oncoPrint plot
 # 11. Formatting ComplexHeatmap annotations
 # 12. Make the ComplexHeatmap with oncoPrint
-
-#ComplexHeatmap install may require XQuartz installation
 
 #### 1. Load Packages ####
 library(tidyverse)
@@ -46,29 +44,13 @@ Clinical_Data <- Clinical_Data %>% subset(Diagnosis != "normal")
 Age.resection.integer <- as.numeric(Clinical_Data$Age.resection)
 Clinical_Data$Age.resection <- Age.resection.integer
 
-# Change ERK Score variable to numeric
-ERK_Score_numeric <- as.numeric(Clinical_Data$ERK)
-Clinical_Data$ERK <- ERK_Score_numeric
-
-# Change BRS variable as numeric
-BRS_numeric <- as.numeric(Clinical_Data$BRS)
-Clinical_Data$BRS <- BRS_numeric
-
-# Change TDS variable to numeric
-TDS_numeric <- as.numeric(Clinical_Data$TDS)
-Clinical_Data$TDS <- TDS_numeric
-
-# Change PI3K_AKT_MTOR variable to numeric
-PI3K_AKT_MTOR_numeric <- as.numeric(Clinical_Data$PI3K_AKT_MTOR)
-Clinical_Data$PI3K_AKT_MTOR <- PI3K_AKT_MTOR_numeric
-
 # Needs to be in vector format for oncoplot
 Clinical_Data <- as.data.frame(Clinical_Data)
 
 #### 4. Subset maf to samples of interest ####
 
 #Diagnoses of interest
-Clinical_Data <- Clinical_Data %>% subset(Diagnosis == "ATC" | Diagnosis == "PDTC" | Diagnosis == "PTC and IFVPTC" | Diagnosis == "NIFTP and EFVPTC" | Diagnosis == "FTC" | Diagnosis == "HC")
+Clinical_Data <- Clinical_Data %>% subset(Diagnosis == "ATC" | Diagnosis == "PDTC" | Diagnosis == "PTC and IFVPTC" | Diagnosis == "NIFTP and EFVPTC" | Diagnosis == "FTC" | Diagnosis == "OTC")
 
 maf_thyroidorigin = subsetMaf(maf = maf, tsb = c(Clinical_Data$Tumor_Sample_Barcode), mafObj = TRUE)
 
@@ -82,8 +64,9 @@ oncoplot(maf = maf_thyroidorigin, top = 20, annotationDat = Clinical_Data, # top
          anno_height = 2,
          removeNonMutated = FALSE, # Shows "Dark Matter"
          sortByAnnotation = TRUE, # Must sort by annotation of Diagnosis ... because diagnosis is listed first it is automatically used
-         annotationOrder = c("ATC","PDTC","PTC and IFVPTC", "NIFTP and EFVPTC", "FTC","HC"), # Here is the order that I want the diagnoses in 
+         annotationOrder = c("ATC","PDTC","PTC and IFVPTC", "NIFTP and EFVPTC", "FTC","OTC"), # Here is the order that I want the diagnoses in 
          numericAnnoCol = NULL, # This is for changing the color of annotation gradients...I couldn't get it to work in maf tools though
+         #bgCol = "white", #this changes background color from default grey to white
          writeMatrix = TRUE) # This is the most important step -> I will use writeMatrix as input for the complex heatmap package
 
 #### 6. Read in Oncoplot Matrix generated with maftools ####
@@ -206,7 +189,7 @@ for(i in 1:nrow(Clinical_Data_Oncoplot_Restricted)){
   else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "FTC"){
     Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 5
   }
-  else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "HC"){
+  else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "OTC"){
     Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 6
   }
 }
@@ -271,8 +254,8 @@ alter_fun = list(
   # Fusions as a triangle
   Fusion = function(x, y, w, h){
     grid.polygon(
-      unit.c(x + 0.25*w, x - 0.25*w, x - 0.25*w),
-      unit.c(y         , y - 0.40*h, y + 0.40*h), 
+      unit.c(x + 0.5*w, x - 0.5*w, x - 0.5*w),
+      unit.c(y         , y - 0.50*h, y + 0.50*h), 
       gp = gpar(fill = col["Fusion"], col = NA)
     )
   }
@@ -306,34 +289,26 @@ HA_Top <- HeatmapAnnotation(column_barplot = anno_oncoprint_barplot(border = TRU
                             Sex = Clinical_Data_Oncoplot_Restricted$Sex,
                             Age = Clinical_Data_Oncoplot_Restricted$Age.resection,
                             'Aggressive disease' = Clinical_Data_Oncoplot_Restricted$Aggressive.disease,
-                            TDS = Clinical_Data_Oncoplot_Restricted$TDS,
-                            ERK = Clinical_Data_Oncoplot_Restricted$ERK,
-                            BRS = Clinical_Data_Oncoplot_Restricted$BRS,
-                            'PI3K-AKT-MTOR'  = Clinical_Data_Oncoplot_Restricted$PI3K_AKT_MTOR,
                             col = list(Diagnosis = c("ATC" = "magenta",  # These are the colors for adding Diagnosis as an annotation. Remove if adding as a label.
                                                      "PDTC" = "purple", 
                                                      "PTC and IFVPTC" = "red",
                                                      "NIFTP and EFVPTC" = "lightskyblue",
                                                      "FTC" = "blue",
-                                                     "HC" = "dodgerblue2"),
-                                       'Location' = c("Non-metastatic" = "Black",
-                                                      "Local metastasis" = "Green",
-                                                      "Distant metastasis" = "Red"),
+                                                     "OTC" = "dodgerblue2"),
+                                       'Location' = c("Local disease" = "Black",
+                                                      "Regional LN met" = "Green",
+                                                      "Distant met" = "Red"),
                                        Sex = c("M" = "mediumpurple1", 
                                                "F" = "palevioletred1"),
                                        Age = Age_Color,
                                        'Aggressive disease' = c("Aggressive" = "Red",
                                                       "Indolent" = "Blue",
-                                                      "NA" = "Grey"),
-                                       BRS = BRS_Color,
-                                       TDS = TDS_Color,
-                                       ERK = ERK_Color,
-                                       'PI3K-AKT-MTOR' = PI3K_AKT_MTOR_Color),
-                            gp = gpar(col = "black"),
+                                                      "NA" = "Grey")),
+                             gp = gpar(col = "black"),
                             annotation_name_gp = gpar(col = "black", fontsize = 16, fontface = "bold"),
-                            annotation_name_side = "left",
-                            annotation_legend_param = list(Diagnosis=list(at=c("ATC","PDTC","PTC and IFVPTC","NIFTP and EFVPTC","FTC","HC")),
-                                                          'Location'=list(at=c("Non-metastatic","Local metastasis", "Distant metastasis")),
+                            annotation_name_side = "left",#recommend by Matt 3-14-22
+                            annotation_legend_param = list(Diagnosis=list(at=c("ATC","PDTC","PTC and IFVPTC","NIFTP and EFVPTC","FTC","OTC")),
+                                                          'Location'=list(at=c("Local disease","Regional LN met", "Distant met")),
                                                           'Aggressive disease'=list(at=c("Aggressive","Indolent")))) #recommend by Matt 4-5-22, see https://jokergoo.github.io/ComplexHeatmap-reference/book/
 
 # Left annotations
@@ -362,7 +337,7 @@ ht <- oncoPrint(Oncoplot_Data_Fusions_Included,
                 column_title_gp = gpar(col = "black", fontsize = 16, fontface = "bold"),
                 heatmap_legend_param = heatmap_legend_param, 
                 row_split = factor(rep(c("Mutation", "Fusion"), times = c(20,7)), levels = c("Mutation", "Fusion")),
-                column_order = 1:239, #holds column order in the order fed in by the oncoplot matrix, will need adjusting depending on cohort subsetting used (see environment, Clinical_Data_Oncoplot_Restricted, number of obs.)
+                column_order = 1:239, # old 238 #holds column order in the order fed in by the oncoplot matrix, will need adjusting depending on cohort subsetting used (see environment, Clinical_Data_Oncoplot_Restricted, number of obs.)
                 left_annotation = HA_Left,
                 row_title = NULL) # Prevents double print of "mutation, fusion"
 draw(ht, merge_legend = TRUE) # Merges legends from mutations and annotations into one column
