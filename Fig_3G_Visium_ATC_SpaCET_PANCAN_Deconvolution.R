@@ -1,6 +1,6 @@
 # Author: Matthew Aaron Loberg
 # Date: 23-0608
-# Script: Figure3_Visium_ATC_SpaCET_PANCAN_Deconvolution.R
+# Script: Fig_3G_Visium_ATC_SpaCET_PANCAN_Deconvolution.R
 
 #### A note on this script: ####
 # This script contains information for running SpaCET analysis on one anaplastic thyroid carcinoma (ATC) Visium Spatial Transcriptomics sample using output data from the 10X Genomics SpaceRanger pipeline
