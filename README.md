@@ -1,4 +1,4 @@
-# Unique Stromal Infiltrate Defines Aggressive Thyroid-Cancers
+# Molecular Signature Incorporating Immune Microenvironment Enhances Thyroid Cancer Outcome Prediction
 
 ## Sub-folder Overview
 
