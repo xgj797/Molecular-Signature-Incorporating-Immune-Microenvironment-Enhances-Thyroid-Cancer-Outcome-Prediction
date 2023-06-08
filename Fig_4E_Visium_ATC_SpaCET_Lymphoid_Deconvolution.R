@@ -1,6 +1,6 @@
 # Author: Matthew Aaron Loberg
 # Date: 23-0608
-# Script: Figure4_Visium_ATC_SpaCET_Lymphoid_Deconvolution.R
+# Script: Fig_4E_Visium_ATC_SpaCET_Lymphoid_Deconvolution.R
 
 # Please look at the following script: "Figure3_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" prior to this script
 
