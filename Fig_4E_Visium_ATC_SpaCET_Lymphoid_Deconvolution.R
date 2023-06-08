@@ -2,10 +2,10 @@
 # Date: 23-0608
 # Script: Fig_4E_Visium_ATC_SpaCET_Lymphoid_Deconvolution.R
 
-# Please look at the following script: "Figure3_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" prior to this script
+# Please look at the following script: "Fig_3G_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" prior to this script
 
 #### A note on this script: ####
-# This script takes the output from "Figure3_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" and calculates the capture area frequency of Lymphoid deconvolution
+# This script takes the output from "Fig_3G_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" and calculates the capture area frequency of Lymphoid deconvolution
 # Here, lymphoid deconvolution is defined as the sum of Plasma cells, B cells, CD4 T cells, CD8 T cells, and NK cells
 # Lymphoid deconvolution results are then plotted spatially
 # Finally, an average capture area %lymphoid is calculated
