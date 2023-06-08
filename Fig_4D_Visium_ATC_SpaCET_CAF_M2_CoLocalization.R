@@ -2,10 +2,10 @@
 # Date: 23-0608
 # Script: 23-0329_Thy8_SpaCET_PANCAN.R
 
-# Please look at the following script: "Figure3_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" prior to this script
+# Please look at the following script: "Fig_3G_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" prior to this script
 
 #### A note on this script: ####
-# This script takes the output from "Figure3_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" and looks at co-localization of M2 macrophages and CAFs
+# This script takes the output from "Fig_3G_Visium_ATC_SpaCET_PANCAN_Deconvolution.R" and looks at co-localization of M2 macrophages and CAFs
 # This script was run for all 8 ATC Visium Spatial Transcriptomics in our manuscript
 # First, colocalization is calculated for all SpaCET populations
 # Second, an LRInteraction score is calculated
