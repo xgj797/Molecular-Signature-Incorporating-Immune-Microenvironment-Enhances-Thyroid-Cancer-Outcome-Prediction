@@ -1,6 +1,8 @@
 ### Script Information: PCA of bulk RNA sequencing from all Samples excluding MNG, HT, PTCs with hashimoto's thyroiditis background
 # Color by Diagnosis, BRS, PI3K Score, and TDS
 
+# Note: these PCA plots were included in original submission of this manuscript but were removed from the resubmission
+
 ### Load packages
 library(data.table)
 library(DESeq2)
