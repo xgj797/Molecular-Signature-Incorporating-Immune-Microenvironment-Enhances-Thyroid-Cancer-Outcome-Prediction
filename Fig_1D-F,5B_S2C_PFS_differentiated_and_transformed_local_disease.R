@@ -232,62 +232,6 @@ ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_PIK3CA_PFS.png",
        dpi = 600)
 
 
-### BRS PFS
-#Survival curve calculation
-fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_BRS_All_localdiseaseMalignant)
-print(fit)
-
-# Most basic plot
-ggsurvplot(fit, data=PFS_BRS_All_localdiseaseMalignant)
-
-# More involved, customized plot
-PFS_Plot <- ggsurvplot(fit,
-                       data=PFS_BRS_All_localdiseaseMalignant,
-                       pval = TRUE, pval.method = TRUE, conf.int = FALSE,
-                       risk.table = TRUE, 
-                       risk.table.col = "strata", 
-                       legend = c(.70,.20), # Move the legend
-                       pval.coord = c(.15,.20), # Move the p-value
-                       pval.size = 8,
-                       pval.method.coord = c(.15,.10), # Move the p-value method
-                       font.x = c(23, "bold", "black"),
-                       font.y = c(23, "bold", "black"),
-                       font.title = c(25, "bold", "black"),
-                       # linetype = "strata", # Change line type by groups
-                       # surv.median.line = "hv", # Specify median survival
-                       ggtheme = theme_classic(),
-                       font.tickslab=c(17, "bold", "black"),
-                       font.legend = c(20, "bold", "black"),
-                       risk.table.fontsize = 7,
-                       risk.table.y.text = FALSE,
-                       risk.table.legend = FALSE,
-                       legend.title = "BRAF or RAS-like",
-                       title = "BRAF-RAS Score PFS",
-                       legend.labs = c("BRAF-Like", "RAS-Like"),
-                       tables.height = .33,
-                       break.time.by = 24,
-                       palette = c("red", "#2E9FDF", "#86AA00"))+ # Can switch plot color palette order
-  labs(y = "Progression Free Survival", x = "Months")  
-PFS_Plot$plot <- PFS_Plot$plot + theme(panel.border = element_rect(colour = "black", size = 2, fill = NA))
-PFS_Plot$table <- PFS_Plot$table + 
-  theme(plot.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.text = element_text(size = 20, color = "black", face = "bold"),
-        legend.position = "none")+
-  theme(plot.margin = margin(0.1,1,0.1,0.1, "cm"))+ #gives space for last x-axis tick label, avoiding cutoff
-  labs(y = NULL) 
-PFS_Plot
-
-# Saving the plots with ggsave
-p1 = PFS_Plot$plot
-p2 = PFS_Plot$table
-plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_BRS_PFS.png", 
-       plot = plotp, 
-       width = 7, height = 7,
-       dpi = 600)
-
-
 ### MAP score high/low
 #Survival curve calculation
 fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_MAPscore_All_localdiseaseMalignant)
@@ -339,6 +283,62 @@ p1 = PFS_Plot$plot
 p2 = PFS_Plot$table
 plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
 ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_Aggression_PFS.png", 
+       plot = plotp, 
+       width = 7, height = 7,
+       dpi = 600)
+
+
+### BRS PFS
+#Survival curve calculation
+fit<-survfit(Surv(ProgressionFree_Length, ProgressionStatus) ~ Cat, data= PFS_BRS_All_localdiseaseMalignant)
+print(fit)
+
+# Most basic plot
+ggsurvplot(fit, data=PFS_BRS_All_localdiseaseMalignant)
+
+# More involved, customized plot
+PFS_Plot <- ggsurvplot(fit,
+                       data=PFS_BRS_All_localdiseaseMalignant,
+                       pval = TRUE, pval.method = TRUE, conf.int = FALSE,
+                       risk.table = TRUE, 
+                       risk.table.col = "strata", 
+                       legend = c(.70,.20), # Move the legend
+                       pval.coord = c(.15,.20), # Move the p-value
+                       pval.size = 8,
+                       pval.method.coord = c(.15,.10), # Move the p-value method
+                       font.x = c(23, "bold", "black"),
+                       font.y = c(23, "bold", "black"),
+                       font.title = c(25, "bold", "black"),
+                       # linetype = "strata", # Change line type by groups
+                       # surv.median.line = "hv", # Specify median survival
+                       ggtheme = theme_classic(),
+                       font.tickslab=c(17, "bold", "black"),
+                       font.legend = c(20, "bold", "black"),
+                       risk.table.fontsize = 7,
+                       risk.table.y.text = FALSE,
+                       risk.table.legend = FALSE,
+                       legend.title = "BRAF or RAS-like",
+                       title = "BRAF-RAS Score PFS",
+                       legend.labs = c("BRAF-Like", "RAS-Like"),
+                       tables.height = .33,
+                       break.time.by = 24,
+                       palette = c("red", "#2E9FDF", "#86AA00"))+ # Can switch plot color palette order
+  labs(y = "Progression Free Survival", x = "Months")  
+PFS_Plot$plot <- PFS_Plot$plot + theme(panel.border = element_rect(colour = "black", size = 2, fill = NA))
+PFS_Plot$table <- PFS_Plot$table + 
+  theme(plot.title = element_text(size = 23, color = "black", face = "bold"),
+        axis.title = element_text(size = 23, color = "black", face = "bold"),
+        axis.text = element_text(size = 20, color = "black", face = "bold"),
+        legend.position = "none")+
+  theme(plot.margin = margin(0.1,1,0.1,0.1, "cm"))+ #gives space for last x-axis tick label, avoiding cutoff
+  labs(y = NULL) 
+PFS_Plot
+
+# Saving the plots with ggsave
+p1 = PFS_Plot$plot
+p2 = PFS_Plot$table
+plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
+ggsave("outputs/all_localdisease/PFS/22-0909_All_Malignant_BRS_PFS.png", 
        plot = plotp, 
        width = 7, height = 7,
        dpi = 600)
