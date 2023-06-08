@@ -109,7 +109,7 @@ PFS_Plot
 p1 = PFS_Plot$plot
 p2 = PFS_Plot$table
 plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/all_localdisease/PFS/22-0909_All_Well_Diff_Malignant_Aggression_PFS.png", 
+ggsave("outputs/welldiff/PFS/22-0909_All_Well_Diff_Malignant_Aggression_PFS.png", 
        plot = plotp, 
        width = 7, height = 7,
        dpi = 600)
@@ -165,7 +165,7 @@ PFS_Plot
 p1 = PFS_Plot$plot
 p2 = PFS_Plot$table
 plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/all_localdisease/PFS/22-0909_All_Well_Diff_Malignant_BRS_PFS.png", 
+ggsave("outputs/welldiff/PFS/22-0909_All_Well_Diff_Malignant_BRS_PFS.png", 
        plot = plotp, 
        width = 7, height = 7,
        dpi = 600)
