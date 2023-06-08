@@ -2,13 +2,18 @@
 # GO Analysis
 
 ## 22-1019 Update
-# Making dot plots for the 549 gene ATS and for the 673 RAS-like upregulated genes
+# Making dot plots for the 549 gene MAP and for the 673 RAS-like upregulated genes
 
-# Supplementary Figure 5C + Figure 5D
+# Main Figure 2G (MAP dot plots) + Supplemental Figure 3H (RAS dot plots)
 # Gene ontology analysis performed on geneontology.org
 # Results are plotted here as dot plots
 
-# Open Packages
+## Note: if anywhere there is ATS, it is the same as MAP
+# ATS = aggressive tumor score
+# MAP = molecular aggression and prediction score
+# With resubmission of our manuscript, we changed the name from ATS -> MAP, but some of our code still refers to this score as ATS
+
+# Load Packages
 library(ggplot2)
 library(tidyverse)
 library(stringr)
@@ -166,6 +171,7 @@ DotPlot_GO_Biological_Cycle <- ggplot(GO_Biological_Cycle, aes(Fold_Enrichment, 
 ggsave("outputs/22-1019_GO_Analysis_Enrichment_Plots/22-1019_GO_Biological_ATS_549_Cycle_5.png", height = 5, width = 3, DotPlot_GO_Biological_Cycle, dpi = 600)
 
 ### Adding in RAS-upregulated thyroid ###
+# Note: this is supplemental Figure 3H
 # This data is from upregulated RAS-gene list
 # load data + format
 GO_Biological_Thyroid <- read_csv(file = "data_in_use/22-1019_RAS_LIKE_NOT_AGGRESSIVE_GO_Thyroid.csv")
