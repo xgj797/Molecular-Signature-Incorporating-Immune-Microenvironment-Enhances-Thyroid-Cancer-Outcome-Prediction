@@ -1,4 +1,4 @@
-# Script: Oncoplot_aggressive_compare_FTC-HC.R
+# Author: Matthew Aaron Loberg, edits by George Xu 4-2-22
 
 #### Guide for ComplexHeatmap ####
 # https://jokergoo.github.io/ComplexHeatmap-reference/book/
@@ -6,18 +6,17 @@
 
 #### Table of Contents ####
 # 1. Load packages
-# 2. Read maf file
-# 3. Subset maf to samples of interest
-# 4. Use maf tools to print a matrix to feed into ComplexHeatmap's oncoprint function
-# 5. Read in Oncoplot Matrix generated with maftools
-# 6. Format and subset Oncoplot Matrix and Clinical Data
-# 7. Add in fusion data to Oncoplot Data
-# 8. Make Diagnosis into a numerical variable for sorting
-# 9. Formatting mutation grid of ComplexHeatmap oncoPrint plot
-# 10. Formatting ComplexHeatmap annotations
-# 11. Make the ComplexHeatmap with oncoPrint
-
-#ComplexHeatmap install may require XQuartz installation
+# 2. Read maf file from George
+# 3. Change clinical data of interest to numerics -> this allows for them to be plotted as numerics
+# 4. Subset maf to samples of interest
+# 5. Use maf tools to print a matrix to feed into ComplexHeatmap's oncoprint function
+# 6. Read in Oncoplot Matrix generated with maftools
+# 7. Format and subset Oncoplot Matrix and Clinical Data
+# 8. Add in fusion data to Oncoplot Data
+# 9. Make Diagnosis into a numerical variable for sorting
+# 10. Formatting mutation grid of ComplexHeatmap oncoPrint plot
+# 11. Formatting ComplexHeatmap annotations
+# 12. Make the ComplexHeatmap with oncoPrint
 
 #### 1. Load Packages ####
 library(tidyverse)
@@ -26,32 +25,31 @@ library(ComplexHeatmap)
 library(circlize) # R package for making gradient heatmap annotations
 
 # Set your working directory
-setwd("_")
+setwd("/Users/georgexu/Dropbox/Vanderbilt\ Grad\ School/Lab/Projects/Data/DNA\ seq\ processing/Analysis\ of\ Tiger\ Mutect2\ data/9-28-22\ -\ All\ Oncoplots")
 
 #### 2. Read in Data ####
-# read maf file
+# read maf file from George Xu
 maf <- read.maf(maf = "listgenes_vaclass_diagnosis_2_24_22_update.maf")
 
-# read clin dataframe
 Clinical_Data <- read.csv("Diagnosis_guide_9-28-22_for_supfig.csv", header = TRUE)
 Clinical_Data <- as_tibble(Clinical_Data)
 
 # remove normals -> no resection data (e.g., sequencing, etc.)
 Clinical_Data <- Clinical_Data %>% subset(Diagnosis != "normal")
 
-# subset to either aggressive or remission
+# subset to either aggressive or indolent
 #Clinical_Data <- Clinical_Data %>% subset(Aggressive.disease == "Indolent")
 Clinical_Data <- Clinical_Data %>% subset(Aggressive.disease == "Aggressive")
 
-# Needs to be in vector format for oncoplot
-Clinical_Data <- as.data.frame(Clinical_Data)
-
 #### 3. Subset maf to samples of interest ####
-#Non-metastatic only, comment out if want to include all samples
+#Primary and Local disease only, comment out if want to include all samples
 Clinical_Data <- Clinical_Data %>% subset(Location.type == "Primary" | Location.type == "Localdisease")
 
 #Diagnoses of interest
-Clinical_Data <- Clinical_Data %>% subset(Diagnosis == "FTC" | Diagnosis == "HC")
+# Needs to be in vector format for oncoplot
+Clinical_Data <- as.data.frame(Clinical_Data)
+
+Clinical_Data <- Clinical_Data %>% subset(Diagnosis == "FTC" | Diagnosis == "OTC")
 
 maf_thyroidorigin = subsetMaf(maf = maf, tsb = c(Clinical_Data$Tumor_Sample_Barcode), mafObj = TRUE)
 
@@ -63,7 +61,7 @@ oncoplot(maf = maf_thyroidorigin, top = 20, annotationDat = Clinical_Data, # top
          anno_height = 2,
          removeNonMutated = FALSE, # Shows "Dark Matter"
          sortByAnnotation = TRUE, # Must sort by annotation of Diagnosis ... because Diagnosis is listed first it is automatically used
-         annotationOrder = c("FTC","HC"), # Here is the order that I want the diagnoses in 
+         annotationOrder = c("FTC","OTC"), # Here is the order that I want the diagnoses in 
          numericAnnoCol = NULL, # This is for changing the color of annotation gradients...I couldn't get it to work in maf tools though
          writeMatrix = TRUE) # This is the most important step -> I will use writeMatrix as input for the complex heatmap package
 
@@ -175,12 +173,28 @@ for(y in 1:nrow(Oncoplot_Data_Fusions_Included)){
 # The Diagnosis that you want on the left should be 1
 Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting <- 0
 for(i in 1:nrow(Clinical_Data_Oncoplot_Restricted)){
+  # Diagnosis sorting
+  ###  if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "ATC"){
+  ###      Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 1
+  ###    }
+  ###    else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "PDTC"){
+  ###      Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 2
+  ###    }
+  ###if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "PTC"){
+  ###  Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 1
+  ###}
+  ###else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "FVPTC"){
+  ###  Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 2
+  ###}
   if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "FTC"){
     Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 1
       }
-  else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "HC"){
+  else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "OTC"){
     Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 2
       }
+  ###    else if(Clinical_Data_Oncoplot_Restricted$Diagnosis[i] == "NIFTP"){
+  ###      Clinical_Data_Oncoplot_Restricted$Diagnosis_Sorting[i] <- 7
+  ###    }
 }
 
 
@@ -257,48 +271,14 @@ heatmap_legend_param = list(title = "Alterations", at = c("In_Frame_Del", "Nonse
 
 #### 10. Formatting ComplexHeatmap Annotations ####
 
-### Annotation color gradients
-BRS_Color <- colorRamp2(c(-0.8, 0, .8), c("red", "mediumorchid3", "blue")) # old color combo that I liked
-TDS_Color <- colorRamp2(c(-1, 0, 1), c("yellow", "orange", "brown"))
-ERK_Color <- colorRamp2(c(-50, 0, 50), c("aquamarine", "lavender", "#c51b8a"))
-Age_Color <- colorRamp2(c(18, 54, 90), c("cadetblue1", "cornflowerblue", "blue4"))
-PI3K_AKT_MTOR_Color <- colorRamp2(c(-100, 0, 100), c("green", "white", "red"))
-WNT_Canon_Color <- colorRamp2(c(-100, 0, 100), c("mediumspringgreen", "white", "mediumslateblue"))
-WNT_NonCanon_Color <- colorRamp2(c(-50, 0, 50), c("mediumspringgreen", "white", "mediumslateblue"))
-Cancer.associated.fibroblast_EPIC_Color <- colorRamp2(c(0, 0.25, 1), c("white", "red", "blue"))
-
 ### Make the annotations
 
 # Top annotations
 HA_Top <- HeatmapAnnotation(column_barplot = anno_oncoprint_barplot(border = TRUE,
                                                                     show_fraction = FALSE),
                             Diagnosis = Clinical_Data_Oncoplot_Restricted$Diagnosis, # Note: Can add Diagnosis as a label instead of an annotation...gives the ability to write in the box
-                            #'Location type' = Clinical_Data_Oncoplot_Restricted$Location.type,
-                            #Sex = Clinical_Data_Oncoplot_Restricted$Sex,
-                            #Age = Clinical_Data_Oncoplot_Restricted$Age.resection,
-                            #TDS = Clinical_Data_Oncoplot_Restricted$TDS,
-                            #ERK = Clinical_Data_Oncoplot_Restricted$ERK,
-                            #BRS = Clinical_Data_Oncoplot_Restricted$BRS,
-                            #'PI3K-AKT-MTOR'  = Clinical_Data_Oncoplot_Restricted$PI3K_AKT_MTOR,
-                            #'WNT Canonical' = Clinical_Data_Oncoplot_Restricted$WNT_Canon,
-                            #'WNT NonCanonical' = Clinical_Data_Oncoplot_Restricted$WNT_NonCanon,
-                            #'CAF EPIC' = Clinical_Data_Oncoplot_Restricted$Cancer.associated.fibroblast_EPIC,
                             col = list(Diagnosis = c("FTC" = "blue",
-                                                     "HC" = "skyblue")),
-                                       #'Location type' = c("Primary" = "Black",
-                                        #                 "Localdisease" = "Blue",
-                                        #                 "Localmet" = "Green",
-                                        #                 "Distantmet" = "Red")),
-                                       #Sex = c("M" = "mediumpurple1", 
-                                        #       "F" = "palevioletred1"),
-                                       #Age = Age_Color,
-                                       #BRS = BRS_Color,
-                                       #TDS = TDS_Color,
-                                       #ERK = ERK_Color,
-                                       #'PI3K-AKT-MTOR' = PI3K_AKT_MTOR_Color,
-                                       #'WNT Canonical' = WNT_Canon_Color,
-                                       #'WNT NonCanonical' = WNT_NonCanon_Color,
-                                       #'CAF EPIC' = Cancer.associated.fibroblast_EPIC_Color),
+                                                     "OTC" = "skyblue")),
                             gp = gpar(col = "black"),
                             annotation_name_gp = gpar(col = "black", fontsize = 11, fontface = "bold"),
                             annotation_name_side = "left") #recommend by Matt 3-14-22
@@ -310,8 +290,7 @@ HA_Left = rowAnnotation(foo = anno_block(gp = gpar(fill = c("mediumspringgreen",
 
 #### 11. Make the ComplexHeatmap plot with oncoPrint ####
 
-#png(filename="FTC-HC_Indolent.png",
-png(filename="FTC-HC_Aggressive.png",
+png(filename="FTC-OTC_Aggressive.png",
     res = 300,
     units = "in",
     pointsize = 18,
@@ -336,4 +315,3 @@ ht <- oncoPrint(Oncoplot_Data_Fusions_Included,
                 row_title = NULL) # Prevents double print of "mutation, fusion"
 draw(ht, merge_legend = TRUE) # Merges legends from mutations and annotations into one column
 dev.off()
-
