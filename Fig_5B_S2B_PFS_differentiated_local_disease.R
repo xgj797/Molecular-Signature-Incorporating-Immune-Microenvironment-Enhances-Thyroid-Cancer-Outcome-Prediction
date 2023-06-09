@@ -49,13 +49,13 @@ ClinicalData_welldiff_Malignant$ProgressionFree_Length <- ClinicalData_welldiff_
 ClinicalData_welldiff_Malignant <- ClinicalData_welldiff_Malignant  %>% subset(!is.na(ClinicalData_welldiff_Malignant$ProgressionFree_Length))
 
 # Look at PFS in MAP score (high vs low)
-PFS_MAPscore_welldiff_Malignant <- ClinicalData_welldiff_Malignant %>% subset(!is.na(`MAP score`))
+PFS_MAPscore_welldiff_Malignant <- ClinicalData_welldiff_Malignant %>% subset(!is.na(`MAP.score`))
 
 # Look at PFS in BRS
 PFS_BRS_All_welldiff_Malignant <- ClinicalData_welldiff_Malignant %>% subset(!is.na(BRS))
 
 # PFS Plots
-PFS_MAPscore_welldiff_Malignant <- mutate(PFS_MAPscore_welldiff_Malignant, Cat=ifelse(PFS_MAPscore_welldiff_Malignant$`MAP score` >= 0, "High", "Low"))
+PFS_MAPscore_welldiff_Malignant <- mutate(PFS_MAPscore_welldiff_Malignant, Cat=ifelse(PFS_MAPscore_welldiff_Malignant$`MAP.score` >= 0, "High", "Low"))
 PFS_BRS_All_welldiff_Malignant <- mutate(PFS_BRS_All_welldiff_Malignant, Cat=ifelse(PFS_BRS_All_welldiff_Malignant$BRS > 0, "RAS-Like", "BRAF-Like"))
 
 
