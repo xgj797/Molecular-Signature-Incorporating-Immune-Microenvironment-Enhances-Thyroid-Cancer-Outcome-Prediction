@@ -51,7 +51,7 @@ PFS_TP53.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>
 PFS_PIK3CA.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(PIK3CA.mutation))
 
 # Look at PFS in MAP score (high vs low)
-PFS_MAPscore_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(`MAP score`))
+PFS_MAPscore_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(`MAP.score`))
 
 # Look at PFS in BRS
 PFS_BRS_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(BRS))
@@ -60,7 +60,7 @@ PFS_BRS_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% sub
 PFS_TERT.mut_All_localdiseaseMalignant <- mutate(PFS_TERT.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_TERT.mut_All_localdiseaseMalignant$TERT.mutation == 1, "Mutant", "Not Mutant"))
 PFS_TP53.mut_All_localdiseaseMalignant <- mutate(PFS_TP53.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_TP53.mut_All_localdiseaseMalignant$TP53.mutation == 1, "Mutant", "Not Mutant"))
 PFS_PIK3CA.mut_All_localdiseaseMalignant <- mutate(PFS_PIK3CA.mut_All_localdiseaseMalignant, Cat=ifelse(PFS_PIK3CA.mut_All_localdiseaseMalignant$PIK3CA.mutation == 1, "Mutant", "Not Mutant"))
-PFS_MAPscore_All_localdiseaseMalignant <- mutate(PFS_MAPscore_All_localdiseaseMalignant, Cat=ifelse(PFS_MAPscore_All_localdiseaseMalignant$`MAP score` >= 0, "High", "Low"))
+PFS_MAPscore_All_localdiseaseMalignant <- mutate(PFS_MAPscore_All_localdiseaseMalignant, Cat=ifelse(PFS_MAPscore_All_localdiseaseMalignant$`MAP.score` >= 0, "High", "Low"))
 PFS_BRS_All_localdiseaseMalignant <- mutate(PFS_BRS_All_localdiseaseMalignant, Cat=ifelse(PFS_BRS_All_localdiseaseMalignant$BRS > 0, "RAS-Like", "BRAF-Like"))
 
 
