@@ -203,9 +203,9 @@ HA_Top <- HeatmapAnnotation(Diagnosis = meta$Diagnosis, # Note: Can add Diagnosi
                                                      "NIFTP or EFVPTC" = "lightskyblue",
                                                      "HA" = "cadetblue1",
                                                      "FA" = "lightcyan"),
-                                       Location = c("Non-metastatic"="Black",
-                                                     "Local metastasis"="Green",
-                                                     "Distant metastasis"="Red"),
+                                       Location = c("Local disease"="Black",
+                                                     "Regional LN met"="Green",
+                                                     "Distant met"="Red"),
                                        BRAF.mutation = c("Yes" = "Red",
                                                            "No" = "Black",
                                                            "NA" = "Grey"),
@@ -216,7 +216,7 @@ HA_Top <- HeatmapAnnotation(Diagnosis = meta$Diagnosis, # Note: Can add Diagnosi
                             annotation_name_gp = gpar(col = "black", fontsize = 10),
                             annotation_name_side = "right",
                             annotation_legend_param = list(Diagnosis=list(at=c("ATC","PDTC","PTC or IFVPTC","FTC","HC","NIFTP or EFVPTC","HA","FA")),
-                                                           Location=list(at=c("Non-metastatic","Local metastasis", "Distant metastasis")),
+                                                           Location=list(at=c("Local disease","Regional LN met", "Dist metastasis")),
                                                            BRAF.mutation=list(at=c("Yes","No","NA")),
                                                            RAS.mutation=list(at=c("Yes","No","NA")))) #see https://jokergoo.github.io/ComplexHeatmap-reference/book/
 
