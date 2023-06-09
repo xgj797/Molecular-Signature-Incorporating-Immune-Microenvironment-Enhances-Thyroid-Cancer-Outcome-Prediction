@@ -51,13 +51,13 @@ OS_TP53.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>%
 OS_PIK3CA.mut_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(PIK3CA.mutation))
 
 # Look at OS in MAP score (high vs low)
-OS_MAPscore_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(`MAP score`))
+OS_MAPscore_All_localdiseaseMalignant <- ClinicalData_localdisease_Malignant %>% subset(!is.na(`MAP.score`))
 
 # OS Plots
 OS_TERT.mut_All_localdiseaseMalignant <- mutate(OS_TERT.mut_All_localdiseaseMalignant, Cat=ifelse(OS_TERT.mut_All_localdiseaseMalignant$TERT.mutation == 1, "Mutant", "Not Mutant"))
 OS_TP53.mut_All_localdiseaseMalignant <- mutate(OS_TP53.mut_All_localdiseaseMalignant, Cat=ifelse(OS_TP53.mut_All_localdiseaseMalignant$TP53.mutation == 1, "Mutant", "Not Mutant"))
 OS_PIK3CA.mut_All_localdiseaseMalignant <- mutate(OS_PIK3CA.mut_All_localdiseaseMalignant, Cat=ifelse(OS_PIK3CA.mut_All_localdiseaseMalignant$PIK3CA.mutation == 1, "Mutant", "Not Mutant"))
-OS_MAPscore_All_localdiseaseMalignant <- mutate(OS_MAPscore_All_localdiseaseMalignant, Cat=ifelse(OS_MAPscore_All_localdiseaseMalignant$`MAP score` >= 0, "High", "Low"))
+OS_MAPscore_All_localdiseaseMalignant <- mutate(OS_MAPscore_All_localdiseaseMalignant, Cat=ifelse(OS_MAPscore_All_localdiseaseMalignant$`MAP.score` >= 0, "High", "Low"))
 
 
 ### TERTp
