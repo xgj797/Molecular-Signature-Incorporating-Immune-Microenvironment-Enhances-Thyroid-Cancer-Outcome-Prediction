@@ -19,7 +19,7 @@ HA_Left <- rowAnnotation(Diagnosis = annot$Diagnosis, # Note: Can add Diagnosis 
                          'Location' = annot$Location.type,
                          'Aggressive.disease' = annot$Aggressive.disease,
                          'MAP.category' = annot$MAP.category,
-                         'MAP' = annot$MAP,
+                         'MAP.score' = annot$MAP.score,
                          col = list(Diagnosis = c("ATC" = "magenta",  # These are the colors for adding Diagnosis as an annotation. Remove if adding as a label.
                                                   "PDTC" = "purple", 
                                                   "PTC and IFVPTC" = "red",
@@ -31,8 +31,7 @@ HA_Left <- rowAnnotation(Diagnosis = annot$Diagnosis, # Note: Can add Diagnosis 
                                                              "Benign" = "seashell"),
                                     'MAP.category' = c("Negative" = "cyan",
                                                        "Positive" = "magenta"),
-                                    'MAP' = colorRamp2(c(-0.5,2.5), c("white", "black"))),
-                         #'MAP' = colorRamp2(c(-0.5,0,2.5), c("cyan", "white", "magenta"))), old version
+                                    'MAP.score' = colorRamp2(c(-0.5,2.5), c("white", "black"))),
                          annotation_legend_param = list(Diagnosis=list(at=c("ATC","PDTC","PTC and IFVPTC","FTC")),
                                                         'Location'=list(at=c("Local disease","Regional LN met", "Distant met"))))
 
