@@ -1,0 +1,174 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{setspace,relsize}  % for latex(describe()) (Hmisc package)
+
+%\usepackage{relsize}  % for latex(describe()) (Hmisc package)
+\usepackage{longtable}  % for tables that break over multiple pages
+\usepackage[pdftex]{lscape}
+\usepackage[margin=0.4in,bottom=0.5in,includehead,includefoot]{geometry}  % sets 0.5-inch margins
+\usepackage{amssymb,amsmath,bm,graphicx,epsfig,array,color} % math 
+%\usepackage{amssymb,amsmath,bm,graphicx,epsfig,topcapt,colortbl,array,color} % math formatting
+\usepackage{hyperref}
+\usepackage{alltt}
+\usepackage{booktabs}
+
+\title{Thyroid - Forest plot for poor outcome analysis \\
+(Data date: 1-31-2023)}
+\author{Sheau-Chiann Chen and Fei Ye} 
+\date{\today}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+\maketitle
+%\tableofcontents
+
+%\clearpage
+
+%-----------------------------------------------------------------------------------------
+
+<<setup, include=FALSE, echo=FALSE>>=
+library(knitr)
+opts_knit$set(progress = TRUE, verbose = FALSE, eval.after = c("fig.cap"))
+opts_chunk$set(
+   cache = FALSE,
+   echo = FALSE,
+   tidy = TRUE,
+   dev="pdf",
+
+  fig.path="graphics/",
+
+   fig.keep="high",
+   fig.show="hold",
+   fig.height=3,
+   fig.width=3.2,
+   fig.align="center",
+   message=FALSE,
+   warning=FALSE,
+comment='',
+   autodep = TRUE)
+@
+
+<<>>=
+my.forestplot.1<-function(datin,estimate,lower,upper,palette.value,legend.title.v,y.labname=''){
+  
+  datin$subgroup<-datin$dataset
+  
+  datin$Estimate<-datin[,estimate]
+  datin$LowerCI<-datin[,lower]
+  datin$UpperCI<-datin[,upper]
+  
+  if (estimate=='HR'){
+    datin.out<-subset(datin,select=c("subgroup","Variable","coefficient","se","Wald.Z","p","HR.CI"))
+    names(datin.out)<-c("Subgroup","Variable","Coefficient","SE","Wald.Z","p","Hazard ratio (95 CI)")
+    x.labsname<-'Hazard ratio'
+    
+    out<-kbl(datin.out,booktabs = T,digits = 3,linesep='',longtable=T) %>% 
+      kable_styling(font_size=7,latex_options='repeat_header') 
+   
+    
+  } else {
+    #OR
+    datin.out<-subset(datin,select=c("subgroup","Variable","coefficient","se","Wald.Z","p","OR.CI"))
+    names(datin.out)<-c("Subgroup","Variable","Coefficient","SE","Wald.Z","p","Odds ratio (95 CI)")
+    x.labsname<-'Odds ratio'
+    
+    out<-kbl(datin.out,booktabs = T,digits = 3,linesep='') %>% 
+      kable_styling(font_size=7,latex_options="hold_position")%>% 
+   
+        footnote(number=c('Logistic regression model with maximum penalized likelihood and Jeffreys prior penatly',
+                         'ATS (MAP score) in subgroup future aggression have wider confidence intervals due to none of patients with negative ATS in aggressive disease.'))
+    
+  }
+  
+  print(out)
+  
+  datin$subgroup<-factor(datin$subgroup,levels=rev(unique(datin$subgroup)),
+                         labels=rev(unique(datin$subgroup)))
+  
+  
+  ggplot2::ggplot(datin, aes(x = Estimate, y = subgroup))+
+    theme_forest() +
+  
+    scale_fill_manual(values=palette.value)+
+    scale_colour_manual(values=palette.value)+
+    geom_stripes()+
+    geom_vline(xintercept = 1, linetype = "solid", size = 0.4, colour = "darkgray")+
+  
+    geom_effect(ggplot2::aes(xmin =LowerCI, xmax =UpperCI,color=Variable),
+                position = ggstance::position_dodgev(height = 0.5))+
+    coord_cartesian(xlim=c(0,70))+
+    labs(x=x.labsname,colour="Variable",y=y.labname)
+ 
+}
+@
+
+<<>>=
+
+pacman::p_load(xtable,knitr,summarytools, survival, survminer, formula.tools,
+               car,plyr,reshape,ggplot2,Hmisc,openxlsx,rms)
+
+
+#source('Fun.Thyroid.PFS.AggressiveDisease.0927.2022.R')
+
+
+#library(plyr) #ddply
+library(dplyr) #top_n
+library(ggsci)
+
+x.var.v<-c('TERT.TP53.PIK3CA.mut','ATS.PN','TERT.TP53.PIK3CA.mut+ATS.PN')
+
+legend.title.v<-c('TERTp/TP53/PIK3CA','MAP score','TERTp/TP53/PIK3CA+MAP score')
+
+ll<-length(legend.title.v)
+my.color<-pal_lancet("lanonc")(9) #ggsci
+palette.value<-my.color[c(1:ll)]
+
+
+
+#install.packages('processx')
+# install.packages("devtools")
+#https://nightingalehealth.github.io/ggforestplot/articles/ggforestplot.html
+#devtools::install_github("NightingaleHealth/ggforestplot")
+library(ggforestplot)
+library(tidyverse)
+library(kableExtra)
+ options(knitr.kable.NA = '')
+@
+
+
+\begin{itemize}
+\item Forest plot based on logistic regression model by comparing the following variables: "TP53, TERTp, and PIK3CA", "ATS (MAP score: positive vs. negative)","TP53, TERTp, and PIK3CA + MAP score" 
+\item Outcome: aggressive disease
+   \item Subgroup data
+       \begin{itemize}
+         \item all local malignant (Differentiated +Transformed)
+         \item local malignant well-diff (Differentiated)
+         \item future aggression (Differentiated, Sampled Prior to Aggression)
+       \end{itemize}
+  
+\end{itemize}
+
+<<SupFigure7,results='asis',fig.height=2.6,fig.width=6, fig.cap=''>>=
+
+datin<-read.csv('aggressive.OR.0623.2023.csv',header = TRUE,
+             sep = ",", as.is=TRUE,na = c("NA"," "))
+
+ 
+datin$dataset<-factor(datin$dataset,levels=unique(datin$dataset),
+                      labels=c('All local malignant','Local malignant well-diff',
+                               'Future aggression'))
+datin$Variable<-factor(datin$Variable,levels=x.var.v,
+                       labels=legend.title.v)
+
+my.forestplot.1(datin=datin,estimate='OR',lower='LowerCI',upper='UpperCI',palette.value=palette.value,legend.title.v=legend.title.v,y.labname='Subgroup')
+  
+@
+\clearpage
+
+ <<>>=
+R.version.string
+@
+\end{document}

@@ -1,0 +1,340 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{setspace,relsize}  % for latex(describe()) (Hmisc package)
+
+%\usepackage{relsize}  % for latex(describe()) (Hmisc package)
+\usepackage{longtable}  % for tables that break over multiple pages
+\usepackage[pdftex]{lscape}
+\usepackage[margin=0.4in,bottom=0.5in,includehead,includefoot]{geometry}  % sets 0.5-inch margins
+\usepackage{amssymb,amsmath,bm,graphicx,epsfig,array,color} % math 
+%\usepackage{amssymb,amsmath,bm,graphicx,epsfig,topcapt,colortbl,array,color} % math formatting
+\usepackage{hyperref}
+\usepackage{alltt}
+\usepackage{booktabs}
+
+\title{Thyroid - Poor outcome analysis\\
+(Data date: 1-31-2023)}
+\author{Sheau-Chiann Chen and Fei Ye} 
+\date{\today}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+\maketitle
+\tableofcontents
+
+\clearpage
+
+%-----------------------------------------------------------------------------------------
+
+
+<<setup, include=FALSE, echo=FALSE>>=
+library(knitr)
+opts_knit$set(progress = TRUE, verbose = FALSE, eval.after = c("fig.cap"))
+opts_chunk$set(
+   cache = FALSE,
+   echo = FALSE,
+   tidy = TRUE,
+   dev="pdf",
+  fig.path="graphics/",
+   fig.keep="high",
+   fig.show="hold",
+   fig.height=3,
+   fig.width=3.2,
+   fig.align="center",
+   message=FALSE,
+   warning=FALSE,
+comment='',
+   autodep = TRUE)
+@
+
+
+<<>>=
+
+
+load(file=paste0('data/Thyroid.0131.2023.Rdata'))
+#source(paste0('Fun.Thyroid.PFS.AggressiveDisease.0927.2022.R'))
+#summarytools,
+#pacman::p_load(xtable,knitr, survival, survminer, formula.tools,
+ #              car,plyr,reshape,ggplot2,Hmisc,openxlsx,rms)
+#library(plyr) #ddply
+library(dplyr) #top_n
+library(ggsci)
+library(pROC) #roc
+library(broom)
+library(kableExtra)
+library(gtsummary)
+library(ggplot2)
+library(lmtest) #lrtest
+library(brglm2)
+options(knitr.kable.NA = '')
+
+y.var<-'Aggressive.disease'
+
+#ATS.PN=MAP score
+x.var.v<-c('TERT.TP53.PIK3CA.mut','ATS.PN')
+x.var.name.v<-c('TERT/TP53/PIK3CA','MAP score', 'TERT/TP53/PIK3CA+MAP score')
+predictor.v<-c('TERT.TP53.PIK3CA.mut','ATS.PN','TERT.TP53.PIK3CA.mut+ATS.PN')
+
+
+ll<-length(predictor.v)
+my.color<-pal_lancet("lanonc")(9) #ggsci
+roc.color<-my.color[c(1:ll)]
+
+Final.table<-NULL# for all coefficient
+
+
+
+pvalue.test<-function(p)  ifelse(p>0.99,'0.99',
+                                 ifelse(p<0.001,'<0.001',ifelse(p<0.01,round(p,3),paste0(round(p,3)))))
+
+@
+
+
+\begin{itemize}
+\item Goal: aggressive disease analysis with predictor "TP53, TERTp, and PIK3CA", "ATS (MAP score: positive vs. negative)","TP53, TERTp, and PIK3CA + MAP score"
+
+    \begin{itemize}
+
+   \item Subgroup data
+       \begin{itemize}
+         \item 1: all local malignant (Differentiated + Transformed)
+         \item 2: local malignant well-diff (Differentiated)
+         \item 3: future aggression (Differentiated, Sampled Prior to Aggression)
+         \item 4: future aggression no 3 mut (Differentiated, Sampled Prior to Aggression without mutation in TERTp, TP53, PIK3CA)
+   
+       \end{itemize}
+    \end{itemize}
+
+\item Methods: logistic regression was used to evaluate the association between aggressive disease and a predictor. To deal with rare counts in a 2 by 2 contingency table, maximum penalized likelihood with Jeffreys prior penalty was used to estimate the coefficient and its variance.
+Area under the ROC curve was used to assess the discrimination of a fitted logistic model.
+
+ \end{itemize}
+ 
+\clearpage
+<<>>=
+i.data=1   #manual
+shortname<-d.data.name$dataset[i.data]
+dataset.name<-paste0(shortname,': ',d.data.name$names[i.data])
+@
+\section{Figure 5D Differentiated + Transformed}
+<<include=FALSE>>=
+datin<-subset(d0.a.clean,select=c(y.var,x.var.v ))
+datin<-datin[complete.cases(datin),]
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+fit.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-predictor.v[i]
+x.var.name<-x.var.name.v[i]
+
+block.out = c(block.out, knit_child(paste0('Child.lrm.block.Rnw')))
+ t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  fit.list[[i]]<-fit
+  Final.table<-rbind(Final.table,table.out)
+}
+
+
+@
+ \Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{AUC comparisons}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0(shortname,': AUC comparisons'),fig.pos='h!'>>=
+auc.x=0.3;auc.y=0.15
+
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+
+  
+ my.roc.plot<-function(roc.out.list,auc.text.list,roc.color,auc.x,auc.y){
+  par(pty='s')
+  plot(roc.out.list[[1]],col=roc.color[1],legacy.axes=TRUE,print.auc=FALSE,asp=NA)
+  text(auc.x,auc.y,labels=auc.text.list[[1]],cex=0.7,col=roc.color[1])
+  
+  ll<-length(roc.out.list)
+  if (ll>1) {
+  for (i in 2:ll){
+  lines(roc.out.list[[i]],col=roc.color[i],legacy.axes=TRUE,print.auc=FALSE)
+    text(auc.x,auc.y-(i-1)*0.05,labels=auc.text.list[[i]],cex=0.7,col=roc.color[i])
+  }
+  }
+  
+ }
+    
+      my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+      
+      
+@
+
+\clearpage
+\subsection{Model comparison using likelihood ratio test}
+<<>>=
+    #  library(lmtest)
+lrtest(fit.list[[1]],fit.list[[3]])
+cat('\n\n')
+lrtest(fit.list[[2]],fit.list[[3]])
+@
+\clearpage
+<<>>=
+i.data=2   #manual
+shortname<-d.data.name$dataset[i.data]
+dataset.name<-paste0(shortname,': ',d.data.name$names[i.data])
+@
+\section{Figure 5D Differentiated}
+<<include=FALSE>>=
+
+datin<-subset(d0.b.clean,select=c(y.var,x.var.v ))
+datin<-datin[complete.cases(datin),]
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+fit.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-predictor.v[i]
+x.var.name<-x.var.name.v[i]
+
+block.out = c(block.out, knit_child(paste0('Child.lrm.block.Rnw')))
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  fit.list[[i]]<-fit
+   Final.table<-rbind(Final.table,table.out)
+}
+
+@
+\Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{AUC comparisons}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0(shortname,': AUC comparisons'),fig.pos='h!'>>=
+auc.x=0.3;auc.y=0.15
+
+   kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+\clearpage
+\subsection{Model comparison using likelihood ratio test}
+<<>>=
+    #  library(lmtest)
+lrtest(fit.list[[1]],fit.list[[3]])
+cat('\n\n')
+lrtest(fit.list[[2]],fit.list[[3]])
+@
+\clearpage
+<<>>=
+i.data=3   #manual
+shortname<-d.data.name$dataset[i.data]
+dataset.name<-paste0(shortname,': ',d.data.name$names[i.data])
+@
+\section{Figure 5D Differentiated, Sampled Prior to Aggression}
+<<include=FALSE>>=
+
+datin<-subset(d0.c.clean,select=c(y.var,x.var.v ))
+datin<-datin[complete.cases(datin),]
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+fit.list<-roc.out.list
+block.out<-NULL
+for (i in 1:ll){
+x.var<-predictor.v[i]
+x.var.name<-x.var.name.v[i]
+
+block.out = c(block.out, knit_child(paste0('Child.lrm.block.Rnw')))
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  fit.list[[i]]<-fit
+   Final.table<-rbind(Final.table,table.out)
+}
+
+@
+\Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{AUC comparisons}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0(shortname,': AUC comparisons'),fig.pos='h!'>>=
+auc.x=0.3;auc.y=0.15
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+   
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+\clearpage
+\subsection{Model comparison using likelihood ratio test}
+<<>>=
+    #  library(lmtest)
+lrtest(fit.list[[1]],fit.list[[3]])
+cat('\n\n')
+lrtest(fit.list[[2]],fit.list[[3]])
+@
+
+<<>>=
+
+    write.csv(Final.table,file=paste0('aggressive.OR.0623.2023.csv'),na='',row.names=FALSE)
+
+    @
+    
+\clearpage
+
+<<>>=
+
+i.data=4   #manual
+shortname<-d.data.name$dataset[i.data]
+dataset.name<-paste0(shortname,': ',d.data.name$names[i.data])
+@
+\section{Figure 5D Differentiated, Sampled Prior to Aggression without mutation in TERTp, TP53, PIK3CA}
+
+<<include=FALSE>>=
+ roc.color<-my.color[2]
+
+datin<-d0.d.clean
+
+t.out.c<-NULL
+roc.out.list<-vector(mode='list',length=ll)
+auc.text.list<-roc.out.list
+block.out<-NULL
+#for (i in 1:ll){
+
+i=1
+x.var<-'ATS.PN'
+x.var.name<-'MAP score'
+
+block.out = c(block.out, knit_child(paste0('Child.lrm.block.Rnw')))
+
+  t.out.c<-rbind(t.out.c,out.c)
+  roc.out.list[[i]]<-roc.out
+  auc.text.list[[i]]<-auc.text
+  
+
+
+@
+\Sexpr{paste(block.out, collapse = '\n')}
+\clearpage
+\subsection{AUC comparisons}
+<<results='asis',fig.width=4,fig.height=4,fig.cap=paste0(shortname,': AUC comparisons'),fig.pos='h!'>>=
+auc.x=0.3;auc.y=0.15
+
+    kable(t.out.c,caption=paste0(shortname,': AUC with 95 percent confidence interval'),booktabs=T,linesep='',row.names = F) %>%
+       kable_styling(latex_options='hold_position')
+
+  my.roc.plot(roc.out.list=roc.out.list,auc.text.list=auc.text.list,roc.color=roc.color,auc.x=auc.x,auc.y=auc.y)
+@
+\clearpage
+
+ <<>>=
+R.version.string
+@
+
+\end{document}
