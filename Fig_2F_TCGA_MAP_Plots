@@ -1,0 +1,268 @@
+# Author: Matthew Loberg
+# Script: Figure 2F TCGA Plots (MAP Score by various TCGA characteristics)
+
+# See the TCGA folder for the data used in this script
+# The TCGA folder also has the script that was used for calculating MAP in TCGA samples
+
+# Load required packages
+library(tidyverse)
+
+#### Load in  and Merge TCGA Patient Data and TCGA Sample Data #### 
+# Note: This data downloaded from cbioportal
+
+# Load patient data file -> make into tibble for easier cleaning
+TCGA_Patient_Data <- as_tibble(read.table(file = "data_in_use/22-0107_TCGA_data_clinical_patient.txt", sep = '\t', header = TRUE))
+
+# Load sample data file -> make into tibble for easier cleaning
+TCGA_Sample_Data <- as_tibble(read.table(file = "data_in_use/22-0107_TCGA_data_clinical_sample.txt", sep = '\t', header = TRUE)) # Load sample data file
+
+#### Merge TCGA Patient and Sample Data ####
+
+# PATIEND_ID has an "01" appended to the end of each sample. Here, I will remove it from each sample. 
+TCGA_Sample_Data$PATIENT_ID <- substr(TCGA_Sample_Data$PATIENT_ID, 1, nchar(TCGA_Sample_Data$PATIENT_ID)-3)
+
+# Combine sample data and patient data
+Patient_Sample_Combined <- as_tibble(merge(TCGA_Sample_Data, TCGA_Patient_Data, by.x = "PATIENT_ID", by.y = "PATIENT_ID", all = T))
+
+#### Load and merge MAP Score data with Patient_Sample_Combined ####
+# Merge this tibble with the clinical patient data
+TCGA_MAP <- read_csv(file = "data_in_use/22-0930_TCGA_MAP_Scores.csv")
+TCGA_MAP <- TCGA_MAP %>% merge(Patient_Sample_Combined)
+
+# Cleaning up
+rm(Patient_Sample_Combined, TCGA_Patient_Data, TCGA_Sample_Data)
+
+#### Disease Stage Plots for Figure 2F ####
+## Disease stage in depth 
+
+# Will start by subsetting just to lesions with disease stage data
+Disease_Stage_Tibble <- TCGA_MAP %>% subset(DISEASE_STAGE != "" & DISEASE_STAGE != "[Not Available]")
+# dplyr::rename Stage IVA and Stage IVC as just stage IV
+for(i in 1:nrow(Disease_Stage_Tibble)){
+  if(Disease_Stage_Tibble$DISEASE_STAGE[i] == "Stage IVA" |
+     Disease_Stage_Tibble$DISEASE_STAGE[i] == "Stage IVC"){
+    Disease_Stage_Tibble$DISEASE_STAGE[i] <- "Stage IV"
+  }
+}
+
+# Make the plot with restricted groups
+# MAP score by disease stage: violin plot
+plot <- ggplot(Disease_Stage_Tibble, aes(DISEASE_STAGE, MAP)) + 
+  geom_violin(aes(fill = DISEASE_STAGE),
+              alpha = 0.2,
+              show.legend = FALSE,
+              scale = "width") + 
+  geom_jitter(aes(),
+  position = position_jitter(width = 0.1, height = 0),
+  size = 1.5,
+  alpha = 0.7,
+  show.legend = FALSE) + 
+  scale_fill_manual(values = c(
+    "black", # Stage I Color
+    "#00BFC4", # Stage II Color
+    "red", # Stage III Color
+    "purple")) + # Stage IV Color
+  # scale_colour_manual(values = c("black", "red")) + 
+  scale_x_discrete(name = "Disease Stage", limits = c("Stage I", "Stage II", "Stage III", "Stage IV")) + 
+  labs(y = "MAP Score") + 
+  ggtitle("MAP Score\nby Disease Stage") +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5),
+                     limits = c(-0.4, 1.5)) +
+  theme_classic() + 
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)  + 
+  theme(    
+    panel.border = element_rect(colour = "black", size = 3, fill = NA),
+    plot.title = element_text(size = 30, color = "black", face = "bold", hjust = 0.5, vjust = 1.8),
+    axis.title = element_text(size = 30, color = "black", face = "bold"),
+    axis.text = element_text(size = 25, color = "black", face = "bold"))
+ggsave("outputs/Fig2F_TCGA_DiseaseStage_MAP_Score_jitter.png",
+       plot, 
+       width = 8, height = 7, dpi = 600)
+# Note: 3 outliers not plotted (included in stats below)
+
+# Stats for MAP Score by Disease Stage
+kruskal.test(MAP ~ DISEASE_STAGE, data = Disease_Stage_Tibble) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(Disease_Stage_Tibble$MAP, Disease_Stage_Tibble$DISEASE_STAGE, # this returned 0.2475
+                     p.adjust.method = "bonferroni")
+
+
+#### Risk Group Plots for Figure 2F ####
+# Subset out samples without a risk group 
+TCGA_Tibble_MAP_RISK <- TCGA_MAP %>% subset(RISK_GROUP != "")
+
+# Plot MAP score by risk group: violin
+plot <- ggplot(TCGA_Tibble_MAP_RISK, aes(RISK_GROUP, MAP)) + 
+  geom_violin(aes(fill = RISK_GROUP),
+              alpha = 0.2,
+              show.legend = FALSE,
+              scale = "width") + 
+  geom_jitter(aes(),
+  position = position_jitter(width = 0.1, height = 0),
+  size = 1.5,
+  alpha = 0.7,
+  show.legend = FALSE) + 
+  scale_fill_manual(values = c("purple", # High Risk group color
+                               "red", # Intermediate risk group color
+                               "#00BFC4")) + # Low risk group color 
+  # scale_colour_manual(values = c("black", "red")) + 
+  scale_x_discrete(name = "Risk Group", limits = c("Low", "Intermediate", "High")) + 
+  labs(y = "MAP Score") + 
+  ggtitle("MAP Score\nby Risk Group") +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5),
+                     limits = c(-0.4, 1.5)) +
+  theme_classic() + 
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)  + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 3, fill = NA),
+    plot.title = element_text(size = 30, color = "black", face = "bold", hjust = 0.5, vjust = 1.8),
+    axis.title = element_text(size = 30, color = "black", face = "bold"),
+    axis.text = element_text(size = 25, color = "black", face = "bold"))
+ggsave("outputs/Fig2F_TCGA_RiskGroup_MAP_Score_jitter.png",
+       plot, 
+       width = 8, height = 7, dpi = 600)
+# Note: 3 outliers not plotted (included in stats below)
+
+# Stats for MAP by Risk Group
+kruskal.test(MAP ~ RISK_GROUP, data = TCGA_Tibble_MAP_RISK) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(TCGA_Tibble_MAP_RISK$MAP, TCGA_Tibble_MAP_RISK$RISK_GROUP, # this returned 0.2475
+                     p.adjust.method = "bonferroni")
+
+#### Extrathyroidal Extension Plots: Supplemental Figure 5a and Supplemental Figure 5b ####
+# Simplifying the TCGA extrathyroidal extension category
+TCGA_MAP$Extrathyroidal_Modified <- TCGA_MAP$EXTRATHYROIDAL_EXTENSION
+for(i in 1:nrow(TCGA_MAP)){
+  if(TCGA_MAP$Extrathyroidal_Modified[i] == "Moderate/Advanced (T4a)"){
+    TCGA_MAP$Extrathyroidal_Modified[i] <- "T4"
+  }
+  else if(TCGA_MAP$Extrathyroidal_Modified[i] == "Very Advanced (T4b)"){
+    TCGA_MAP$Extrathyroidal_Modified[i] <- "T4"
+  }
+  else if(TCGA_MAP$Extrathyroidal_Modified[i] == "Minimal (T3)"){
+    TCGA_MAP$Extrathyroidal_Modified[i] <- "T3"
+  }
+}
+
+# Extrathyroidal Modified Extension plots
+# Subset to just the samples needed for plots
+Extrathyroidal_plots <- TCGA_MAP %>% subset(Extrathyroidal_Modified == "None" |
+                                            Extrathyroidal_Modified == "T3" |
+                                            Extrathyroidal_Modified == "T4")
+
+# Now I will plot the new extrathyroidal modified category by 
+# MAP Score by extrathyroidal extension: Violin
+plot <- ggplot(Extrathyroidal_plots, aes(Extrathyroidal_Modified, MAP)) + 
+  geom_violin(aes(fill = Extrathyroidal_Modified),
+              alpha = 0.2,
+              show.legend = FALSE,
+              scale = "width") + 
+  geom_jitter(aes(),
+  position = position_jitter(width = 0.1, height = 0),
+  size = 1.5,
+  alpha = 0.7,
+  show.legend = FALSE) + 
+  scale_fill_manual(values = c("#00BFC4", "red", "purple")) + 
+  # scale_colour_manual(values = c("black", "red")) + 
+  scale_x_discrete(name = "Extrathyroidal Extension", limits = c("None", "T3", "T4")) + 
+  labs(y = "MAP Score") + 
+  ggtitle("MAP Score\nby Extrathyroidal Extension") +
+  theme_classic() + 
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5),
+                     limits = c(-0.4, 1.5)) +
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2)  + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 3, fill = NA),
+    plot.title = element_text(size = 30, color = "black", face = "bold", hjust = 0.5, vjust = 1.8),
+    axis.title = element_text(size = 30, color = "black", face = "bold"),
+    axis.text = element_text(size = 25, color = "black", face = "bold"))
+ggsave("outputs/Fig2F_TCGA_ExtrathyroidalExtension_MAP_Score_jitter.png",
+       plot, 
+       width = 8, height = 7, dpi = 600)
+# Note: 3 outliers not plotted (included in stats below)
+
+# Stats for MAP by Extrathyroidal Extension
+kruskal.test(MAP ~ Extrathyroidal_Modified, data = Extrathyroidal_plots) # shouldn't be necessary for only two groups
+pairwise.wilcox.test(Extrathyroidal_plots$MAP, Extrathyroidal_plots$Extrathyroidal_Modified, # this returned 0.2475
+                     p.adjust.method = "bonferroni")
+
+
+#### Histology Type Plots: Supplemental Figure 5c and Supplemental Figure 5d ####
+# Here I will look at histological type and MAP Score
+# First, I need to simplify the histologic types in the data (multiple naming versions of same type, etc.)
+TCGA_MAP$HISTOLOGICAL_TYPE_COMPLEX <- TCGA_MAP$HISTOLOGICAL_TYPE
+for(i in 1:nrow(TCGA_MAP)){
+  if(TCGA_MAP$HISTOLOGICAL_TYPE[i] == ""){
+    TCGA_MAP$HISTOLOGICAL_TYPE_COMPLEX[i] <- "Unknown\nNot Specified"
+  }
+  else if(TCGA_MAP$HISTOLOGICAL_TYPE_OTHER[i] == "Diffuse Sclerosing Variant" |
+          TCGA_MAP$HISTOLOGICAL_TYPE_OTHER[i] == "Diffuse sclerosing variant" |
+          TCGA_MAP$HISTOLOGICAL_TYPE_OTHER[i] == "Papillary carcinoma, diffuse sclerosing variant"){
+    TCGA_MAP$HISTOLOGICAL_TYPE_COMPLEX[i] <- "Diffuse\nSclerosing"
+  }
+  else if(TCGA_MAP$HISTOLOGICAL_TYPE_OTHER[i] == "cribriform morular" |
+          TCGA_MAP$HISTOLOGICAL_TYPE_OTHER[i] == "cribiform morular"){
+    TCGA_MAP$HISTOLOGICAL_TYPE_COMPLEX[i] <- "Cribriform\nMorular"
+  }
+  else if(TCGA_MAP$HISTOLOGICAL_TYPE_OTHER[i] == "encapsulated follicular"){
+    TCGA_MAP$HISTOLOGICAL_TYPE_COMPLEX[i] <- "Follicular" 
+  }
+  else if(TCGA_MAP$HISTOLOGICAL_TYPE[i] == "Tall Cell"){
+    TCGA_MAP$HISTOLOGICAL_TYPE_COMPLEX[i] <- "Tall\nCell"
+  }
+}
+
+# Subset the data to just the following groups: 
+# Follicular 
+# Diffuse\nSclerosing
+# Tall Cell
+# Classical
+Histology_Plot_Cohort <- TCGA_MAP %>% subset(HISTOLOGICAL_TYPE_COMPLEX == "Classical" |
+                                             HISTOLOGICAL_TYPE_COMPLEX == "Diffuse\nSclerosing" |
+                                             HISTOLOGICAL_TYPE_COMPLEX == "Follicular" | 
+                                             HISTOLOGICAL_TYPE_COMPLEX == "Tall\nCell")
+
+### Make a new plot combining diffuse sclerosing and tall cell
+Histology_Plot_Cohort$HISTOLOGICAL_TYPE_SIMPLIFIED <- Histology_Plot_Cohort$HISTOLOGICAL_TYPE_COMPLEX
+for(i in 1:nrow(Histology_Plot_Cohort)){
+  if(Histology_Plot_Cohort$HISTOLOGICAL_TYPE_COMPLEX[i] == "Diffuse\nSclerosing" |
+     Histology_Plot_Cohort$HISTOLOGICAL_TYPE_COMPLEX[i] == "Tall\nCell"){
+    Histology_Plot_Cohort$HISTOLOGICAL_TYPE_SIMPLIFIED[i] <- "Diffuse\nSclerosing\n+\nTall Cell"
+  }
+}
+
+# Plot new histology definitions
+# MAP score by histology simplified: Violin
+plot <- ggplot(Histology_Plot_Cohort, aes(HISTOLOGICAL_TYPE_SIMPLIFIED, MAP)) + 
+  geom_violin(aes(fill = HISTOLOGICAL_TYPE_SIMPLIFIED),
+              alpha = 0.4,
+              show.legend = FALSE,
+              scale = "width") + 
+  geom_jitter(aes(),
+  position = position_jitter(width = 0.1, height = 0),
+  size = 1.5,
+  alpha = c(0.8),
+  show.legend = FALSE) +
+  scale_fill_manual(values = c("red", "purple", "blue")) + 
+  scale_x_discrete(name = "Histology", limits = c("Follicular", "Classical", "Diffuse\nSclerosing\n+\nTall Cell")) + 
+  labs(y = "MAP\nScore") + 
+  ggtitle("MAP Score\nby Histology") +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5),
+                     limits = c(-.4, 1.5)) +
+  theme_classic() + 
+  geom_hline(yintercept = 0.0, linetype = 2, colour = "red", size = 2) + 
+  theme(
+    panel.border = element_rect(colour = "black", size = 3, fill = NA),    
+    plot.title = element_text(size = 30, color = "black", face = "bold"),
+    axis.title = element_text(size = 30, color = "black", face = "bold"),
+    axis.text = element_text(size = 25, color = "black", face = "bold"))
+ggsave("outputs/Fig2F_TCGA_Histology_MAP_Score_jitter.png",
+       plot, 
+       width = 8, height = 7, dpi = 600)
+# Note: 3 outliers excluded from plot (include in stats below)
+
+# Stats for MAP Score by Histology
+kruskal.test(MAP ~ HISTOLOGICAL_TYPE_SIMPLIFIED, data = Histology_Plot_Cohort) 
+pairwise.wilcox.test(Histology_Plot_Cohort$MAP, Histology_Plot_Cohort$HISTOLOGICAL_TYPE_SIMPLIFIED, 
+                     p.adjust.method = "bonferroni")
+
+# Cleaning up
+rm(list = ls())
