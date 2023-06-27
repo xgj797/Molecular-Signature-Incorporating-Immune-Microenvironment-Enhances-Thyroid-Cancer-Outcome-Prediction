@@ -1,9 +1,9 @@
 # Author: Matthew A Loberg
 # Date: 22-0913
-# Description: TCGA Survival Curves by ATS
+# Description: TCGA Survival Curves by MAP
 
 # 22-0913 update
-# using new ATS score
+# using new MAP score
 
 # Load required packages
 library(ggplot2)
@@ -56,7 +56,7 @@ remove(list = c("TCGA_RNA_Z_Scores", "TCGA_Transposed", "Gene_Symbols"))
 ### Read in Gene Set of interest ###
 # 1695 genes generated on 22-0331
 # Today updating to 526 genes generated on 22-0426 (old as of 22-0913)
-# Today (22-0913) updating to new ATS score genes
+# Today (22-0913) updating to new MAP score genes
 PoorOutcome_Genes <- read_csv(file = "data_in_use/22-0426_All_BRAF_All_PoorOutcome_Overlap_Genes.csv")
 # New gene set
 PoorOutcome_Genes <- read_csv(file = "data_in_use/22-0908_All_BRAF_All_Aggressive_Overlap_Genes.csv")
@@ -249,11 +249,9 @@ TCGA_Tibble_PoorOutcome <- TCGA_Tibble_PoorOutcome %>% merge(Patient_Sample_Comb
 # Looking at DFS and OS
 # Make a new tibble for each of the above restricted to samples with DFS month data
 DFS_PoorOutcome <- TCGA_Tibble_PoorOutcome %>% subset(!(is.na(DFS_MONTHS)))
-DFS_BRAF_RAS_Score <- DFS_PoorOutcome %>% subset(BRAFV600E_RAS != "")
 
 # Make a new tibble for each of the above restricted to samples with OS month data
 OS_PoorOutcome <- TCGA_Tibble_PoorOutcome %>% subset(!(is.na(OS_MONTHS)))
-OS_BRAF_RAS_Score <- OS_PoorOutcome %>% subset(BRAFV600E_RAS != "")
 
 ### Poor Outcome Disease Free Survival Plot
 # Summary statistics on the DFS Samples PoorOutcomes Score
@@ -294,7 +292,7 @@ DFS_Plot <- ggsurvplot(fit,
                        risk.table.y.text = FALSE,
                        risk.table.legend = FALSE,
                        legend.title = "Mean Z-Score",
-                       title = "Aggressive Thyroid Score DFS",
+                       title = "Molecular Aggression Prediction Score DFS",
                        legend.labs = c("Z-Score < 0", "Z-Score > 0"),
                        tables.height = .33,
                        palette = c("mediumpurple1", # Z-Score < 0
@@ -359,7 +357,7 @@ OS_Plot <- ggsurvplot(fit,
                       risk.table.y.text = FALSE,
                       risk.table.legend = FALSE,
                       legend.title = "Mean Z-Score",
-                      title = "Aggressive Thyroid Score OS",
+                      title = "Molecular Aggression Prediction Score OS",
                       legend.labs = c("Z-Score < 0", "Z-Score > 0"),
                       tables.height = .33,
                       palette = c("mediumpurple1", # Z-Score < 0
@@ -378,119 +376,7 @@ OS_Plot
 p1 = OS_Plot$plot
 p2 = OS_Plot$table
 plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/22-0913_TCGA_ATS_Score_Survival/22-0913_TCGA_ATS_OS.png", 
-       plot = plotp, 
-       width = 7, height = 7,
-       dpi = 600)
-
-### BRAF-RAS Disease Free Survival Plot
-#Disease Free Survival curve calculation
-fit<-survfit(Surv(DFS_MONTHS, DFS_Status_Numeric) ~ BRAFV600E_RAS, data=DFS_BRAF_RAS_Score)
-print(fit)
-
-# Most basic plot
-ggsurvplot(fit, data=DFS_BRAF_RAS_Score)
-
-# More involved, customized plot
-DFS_Plot <- ggsurvplot(fit,
-                       data=DFS_BRAF_RAS_Score,
-                       pval = TRUE, pval.method = TRUE, conf.int = FALSE,
-                       risk.table = TRUE, 
-                       risk.table.col = "strata", 
-                       legend = c(.74,.20),
-                       pval.coord = c(.15,.18),
-                       pval.size = 8,
-                       break.time.by = 24,
-                       pval.method.coord = c(.15,.09),
-                       font.x = c(25, "bold", "black"),
-                       font.y = c(25, "bold", "black"),
-                       font.title = c(27, "bold", "black"),
-                       # linetype = "strata", # Change line type by groups
-                       # surv.median.line = "hv", # Specify median survival
-                       ggtheme = theme_classic(),
-                       font.tickslab=c(20, "bold", "black"),
-                       font.legend = c(20, "bold", "black"),
-                       risk.table.fontsize = 8,
-                       risk.table.y.text = FALSE,
-                       risk.table.legend = FALSE,
-                       legend.title = "BRAF-RAS Category",
-                       legend.labs = c("BRAF-like", "RAS-like"),
-                       title = "BRAF-RAS Score DFS",
-                       tables.height = .33,
-                       palette = c("red", "#2E9FDF","#86AA00"))+
-  labs(y = "Disease Free Survival", x = "Months")  
-DFS_Plot$plot <- DFS_Plot$plot + theme(panel.border = element_rect(colour = "black", size = 2, fill = NA))
-DFS_Plot$table <- DFS_Plot$table + 
-  theme(panel.border = element_rect(colour = "black", size = 2, fill = NA),
-        plot.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.text = element_text(size = 15, color = "black", face = "bold"),
-        legend.position = "none")+
-  labs(y = NULL) 
-DFS_Plot
-
-# Saving the plots with ggsave
-p1 = DFS_Plot$plot
-p2 = DFS_Plot$table
-plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/22-0617_TCGA_PoorOutcome_Score_Survival/22-0617_TCGA_BRAF-RAS_DFS.png", 
-       plot = plotp, 
-       width = 7, height = 7,
-       dpi = 600)
-
-
-
-
-
-### BRAF-RAS Overall Survival Plot
-#Survival curve calculation
-fit<-survfit(Surv(OS_MONTHS, OS_Status_Numeric) ~ BRAFV600E_RAS, data=OS_BRAF_RAS_Score)
-print(fit)
-
-# Most basic plot
-ggsurvplot(fit, data=OS_BRAF_RAS_Score)
-
-# More involved, customized plot
-OS_Plot <- ggsurvplot(fit,
-                      data=OS_BRAF_RAS_Score,
-                      pval = TRUE, pval.method = TRUE, conf.int = FALSE,
-                      risk.table = TRUE, 
-                      risk.table.col = "strata", 
-                      legend = c(.75,.50),
-                      pval.coord = c(.15,.45),
-                      pval.size = 8,
-                      break.time.by = 24,
-                      pval.method.coord = c(.15,.60),
-                      font.x = c(23, "bold", "black"),
-                      font.y = c(23, "bold", "black"),
-                      font.title = c(25, "bold", "black"),
-                      # linetype = "strata", # Change line type by groups
-                      # surv.median.line = "hv", # Specify median survival
-                      ggtheme = theme_bw(),
-                      font.tickslab=c(15, "bold", "black"),
-                      font.legend = c(20, "bold", "black"),
-                      risk.table.fontsize = 8,
-                      risk.table.y.text = FALSE,
-                      risk.table.legend = FALSE,
-                      legend.title = "BRAF-RAS Category",
-                      legend.labs = c("BRAF-like", "RAS-like"),
-                      title = "BRAF-RAS Score DFS",
-                      tables.height = .33,
-                      palette = c("red", "#2E9FDF","#86AA00"))+
-  labs(y = "Overall Survival", x = "Months")  
-OS_Plot$table <- DFS_Plot$table + 
-  theme(plot.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.title = element_text(size = 23, color = "black", face = "bold"),
-        axis.text = element_text(size = 15, color = "black", face = "bold"),
-        legend.position = "none")+
-  labs(y = NULL) 
-OS_Plot
-
-# Saving the plots with ggsave
-p1 = OS_Plot$plot
-p2 = OS_Plot$table
-plotp = cowplot::plot_grid(p1,p2,align = "v",axis = "b", ncol =1, rel_heights = c(3,1))
-ggsave("outputs/22-0617_TCGA_PoorOutcome_Score_Survival/22-0617_TCGA_BRAF-RAS_OS.png", 
+ggsave("outputs/22-0913_TCGA_MAP_Score_Survival/22-0913_TCGA_MAP_OS.png", 
        plot = plotp, 
        width = 7, height = 7,
        dpi = 600)
