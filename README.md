@@ -17,8 +17,7 @@
 **/Visium_Analysis**
 - folder containing Visium spatial transcriptomics analysis code
 
-**/Additional_Prediction_Code**
-- Thyroid.DataClean.R is used to process data cleaning
-- Child.brglm2.block.Rnw is a child document of the main documents: Fig_7G_PenalizedLogisticRegression.Rnw and Fig_7H_PenalizedLogisticRegression.Rnw
-
-
+**/Additional_Prediction_and_Survival_Code**
+- Thyroid.DataClean.0131.2023.R is used to process data cleaning.
+-Child.Cox.block.Rnw is a child document of the main document:SurvivalPlot_0623_2023.Rnw.
+-Child.lrm.block.Rnw is a child document of the main documents: Figure5D.Poor_Outcome_Analysis_0623_2023.Rnw
