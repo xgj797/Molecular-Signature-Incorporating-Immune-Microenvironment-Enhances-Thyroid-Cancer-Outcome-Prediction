@@ -44,7 +44,7 @@ Plot_BRS_Histotypes_PoorOutcome <- function(DataSet, XVar, YVar, YAxisTitle){
       legend.box.background = element_rect(size = 2),
       legend.text = element_text(face = "bold", size = 15),
       legend.title = element_text(face = "bold", size = 15)) +
-    scale_x_discrete(name ="Diagnosis", limits = c("FA\n+\nHA","FTC\n+\nHC", "EFVPTC\n+\nNIFTP", "PTC\n+\nIFVPTC", "PDTC", "ATC")) +
+    scale_x_discrete(name ="Diagnosis", limits = c("FA\n+\nOA","FTC\n+\nOTC", "EFVPTC\n+\nNIFTP", "PTC\n+\nIFVPTC", "PDTC", "ATC")) +
     geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
   #geom_hline(yintercept = 0.5, linetype = 2, colour = "red") +# Adding line at 0.5 to see changes in score
   #geom_hline(yintercept = -0.5, linetype = 2, colour = "red")# Adding line at 0.5 to see changes in score
@@ -54,11 +54,11 @@ Plot_BRS_Histotypes_PoorOutcome <- function(DataSet, XVar, YVar, YAxisTitle){
 ### Data formatting for plots
 ClinicalData$Diagnosis_Simplified <- ClinicalData$Diagnosis.with.iFVPTC.and.eFVPTC
 for(i in 1:nrow(ClinicalData)){
-  if(ClinicalData$Diagnosis[i] == "HA" | ClinicalData$Diagnosis[i] == "FA"){
-    ClinicalData$Diagnosis_Simplified[i] <- "FA\n+\nHA"
+  if(ClinicalData$Diagnosis[i] == "OA" | ClinicalData$Diagnosis[i] == "FA"){
+    ClinicalData$Diagnosis_Simplified[i] <- "FA\n+\nOA"
   }
-  else if(ClinicalData$Diagnosis[i] == "HC" | ClinicalData$Diagnosis[i] == "FTC"){
-    ClinicalData$Diagnosis_Simplified[i] <- "FTC\n+\nHC"
+  else if(ClinicalData$Diagnosis[i] == "OTC" | ClinicalData$Diagnosis[i] == "FTC"){
+    ClinicalData$Diagnosis_Simplified[i] <- "FTC\n+\nOTC"
   }
   else if(ClinicalData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "PTC" | ClinicalData$Diagnosis.with.iFVPTC.and.eFVPTC[i] == "IFVPTC"){
     ClinicalData$Diagnosis_Simplified[i] <- "PTC\n+\nIFVPTC"
