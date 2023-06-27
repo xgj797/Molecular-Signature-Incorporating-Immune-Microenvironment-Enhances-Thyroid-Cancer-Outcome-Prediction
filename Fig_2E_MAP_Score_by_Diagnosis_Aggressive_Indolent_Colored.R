@@ -18,15 +18,15 @@ ClinicalData <- read_csv(file = "data_in_use/VUMC.cohort.GX_9-8-22_V2.csv") # La
 # Restrict to only sample types that were used in score calculation. Remove the following: 
 ClinicalData <- ClinicalData %>% subset(Diagnosis != "normal" &
                                         Diagnosis != "FA" &
-                                        Diagnosis != "HA" &
+                                        Diagnosis != "OA" &
                                         Diagnosis != "MNG" &
                                         Diagnosis != "HT")
 
-ATS <- read_csv(file = "data_in_use/22-0908_BRAF_Aggressive_Overlap_Genes_Score_NoFAHA_526.csv")
+MAP <- read_csv(file = "data_in_use/22-0908_BRAF_Aggressive_Overlap_Genes_Score_NoFAOA_526.csv")
 
-ClinicalData <- merge(ClinicalData, ATS)
+ClinicalData <- merge(ClinicalData, MAP)
 
-# Merge PTCs and IFVPTCs, NIFTPs and EFVPTCs; also merge FA/HA and FTC/HC
+# Merge PTCs and IFVPTCs, NIFTPs and EFVPTCs; also merge FA/OA and FTC/OTC
 ClinicalData$Diagnosis_Merged <- ClinicalData$Diagnosis.with.iFVPTC.and.eFVPTC
 for(i in 1:nrow(ClinicalData)){
   if(ClinicalData$Diagnosis_Merged[i] == "PTC" | ClinicalData$Diagnosis_Merged[i] == "IFVPTC"){
@@ -51,7 +51,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
               size = 1.5, 
               alpha = 0.9,
               show.legend = TRUE) +
-  labs (x = "Diagnosis", y = "ATS") + 
+  labs (x = "Diagnosis", y = "MAP Score") + 
   scale_color_manual(values = c("black", "magenta", "grey"), name = "Aggressive/Indolent", labels = c("Indolent", "Aggressive", "Unknown")) +
   theme_classic() + 
   theme(
@@ -63,9 +63,9 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
     legend.title = element_text(face = "bold", size = 20),
     legend.position = c(.25,.82),
     legend.box.background = element_rect(size = 2)) +
-  scale_x_discrete(name ="Diagnosis", limits = c("FTC", "HC", "NIFTP+\nEFVPTC", "IFVPTC+\nPTC", "PDTC", "ATC")) +
+  scale_x_discrete(name ="Diagnosis", limits = c("FTC", "OTC", "NIFTP+\nEFVPTC", "IFVPTC+\nPTC", "PDTC", "ATC")) +
   geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
-ggsave("outputs/22-0927_Fig3D_Aggressive_Tumor_Score_Exploration/22-0927_ATS_Local_by_Histotype_Aggressive_Coloring.png",
+ggsave("outputs/22-0927_Fig3D_Aggressive_Tumor_Score_Exploration/22-0927_MAP_Local_by_Histotype_Aggressive_Coloring.png",
        width = 7,
        height = 5,
        plot, dpi = 600)
@@ -81,7 +81,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
               size = 2, 
               alpha = 0.9,
               show.legend = TRUE) +
-  labs (x = "Diagnosis", y = "ATS") + 
+  labs (x = "Diagnosis", y = "MAP Score") + 
   scale_color_manual(values = c("black", "magenta", "grey"), name = "Aggressive/Indolent", labels = c("Indolent", "Aggressive", "Unknown")) +
   theme_classic() + 
   theme(
@@ -95,7 +95,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
     legend.box.background = element_rect(size = 2)) +
   scale_x_discrete(name ="Diagnosis", limits = c("FTC", "HC", "NIFTP+\nEFVPTC", "IFVPTC+\nPTC", "PDTC", "ATC")) +
   geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
-ggsave("outputs/22-0927_Fig3D_Aggressive_Tumor_Score_Exploration/22-0927_ATS_Local_by_Histotype_Aggressive_Coloring_size2.png",
+ggsave("outputs/22-0927_Fig3D_Aggressive_Tumor_Score_Exploration/22-0927_MAP_Local_by_Histotype_Aggressive_Coloring_size2.png",
        width = 7,
        height = 5,
        plot, dpi = 600)
