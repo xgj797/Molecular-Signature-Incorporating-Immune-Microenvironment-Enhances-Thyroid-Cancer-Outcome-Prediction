@@ -4,7 +4,7 @@
 # Exploration of the 526 gene BRAF-Poor Outcome score that I generated on 22-0426
 
 # 22-0913_Update
-# Using new aggressive tumor score that I calculated on 22-0908 (22-0908_Aggressive_Tumor_Score)
+# Using new aggressive tumor score that I calculated on 22-0908 (22-0908_Molecular_Aggression_Prediction_Score)
 
 # 22-0927 Update
 # Making a new color for aggressive lesions - a brighter pink coler (per Vivian/George)
@@ -38,7 +38,7 @@ for(i in 1:nrow(ClinicalData)){
 }
 
 
-# Make plot for Fig3D with poor outcome labeled and restricted to primary and local disease
+# Make plot for Fig2E with poor outcome labeled and restricted to primary and local disease
 ClinicalData_Local <- ClinicalData %>% subset(Location.type == "Primary" |
                                               Location.type == "Localdisease")
 plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
@@ -51,7 +51,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
               size = 1.5, 
               alpha = 0.9,
               show.legend = TRUE) +
-  labs (x = "Diagnosis", y = "MAP Score") + 
+  labs (x = "Diagnosis", y = "MAP score") + 
   scale_color_manual(values = c("black", "magenta", "grey"), name = "Aggressive/Indolent", labels = c("Indolent", "Aggressive", "Unknown")) +
   theme_classic() + 
   theme(
@@ -65,7 +65,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
     legend.box.background = element_rect(size = 2)) +
   scale_x_discrete(name ="Diagnosis", limits = c("FTC", "OTC", "NIFTP+\nEFVPTC", "IFVPTC+\nPTC", "PDTC", "ATC")) +
   geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
-ggsave("outputs/22-0927_Fig3D_Aggressive_Tumor_Score_Exploration/22-0927_MAP_Local_by_Histotype_Aggressive_Coloring.png",
+ggsave("outputs/22-0927_Fig2E_Molecular_Aggression_Prediction_Score_Exploration/22-0927_MAP_Local_by_Histotype_Aggressive_Coloring.png",
        width = 7,
        height = 5,
        plot, dpi = 600)
@@ -81,7 +81,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
               size = 2, 
               alpha = 0.9,
               show.legend = TRUE) +
-  labs (x = "Diagnosis", y = "MAP Score") + 
+  labs (x = "Diagnosis", y = "MAP score") + 
   scale_color_manual(values = c("black", "magenta", "grey"), name = "Aggressive/Indolent", labels = c("Indolent", "Aggressive", "Unknown")) +
   theme_classic() + 
   theme(
@@ -95,7 +95,7 @@ plot <- ggplot(ClinicalData_Local, aes(Diagnosis_Merged, BRAFPoorOutcome_526)) +
     legend.box.background = element_rect(size = 2)) +
   scale_x_discrete(name ="Diagnosis", limits = c("FTC", "HC", "NIFTP+\nEFVPTC", "IFVPTC+\nPTC", "PDTC", "ATC")) +
   geom_hline(yintercept = 0.0, linetype = 2, colour = "red")
-ggsave("outputs/22-0927_Fig3D_Aggressive_Tumor_Score_Exploration/22-0927_MAP_Local_by_Histotype_Aggressive_Coloring_size2.png",
+ggsave("outputs/22-0927_Fig2E_Molecular_Aggression_Prediction_Score_Exploration/22-0927_MAP_Local_by_Histotype_Aggressive_Coloring_size2.png",
        width = 7,
        height = 5,
        plot, dpi = 600)
