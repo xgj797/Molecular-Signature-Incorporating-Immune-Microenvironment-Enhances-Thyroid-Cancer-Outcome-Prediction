@@ -22,7 +22,7 @@ ClinicalData <- ClinicalData %>% subset(Diagnosis != "normal" &
                                         Diagnosis != "MNG" &
                                         Diagnosis != "HT")
 
-MAP <- read_csv(file = "data_in_use/22-0908_BRAF_Aggressive_Overlap_Genes_Score_NoFAOA_526.csv")
+MAP <- read_csv(file = "data_in_use/22-0908_BRAF_Aggressive_Overlap_Genes_Score_NoFAOA_549.csv")
 
 ClinicalData <- merge(ClinicalData, MAP)
 
