@@ -15,7 +15,7 @@ ClinicalData <- ClinicalData[c("IP",
                                "Diagnosis.with.HTPTC",
                                "Diagnosis.with.iFVPTC.and.eFVPTC",
                                "RNA.ID", 
-                               "BRS", "TDS", "ERK", "PI3K_AKT_MTOR", "WNT_Canon", "WNT_NonCanon")] # Restrict columns
+                               "BRS")] # Restrict columns
 ClinicalData$BRS <- as.numeric(ClinicalData$BRS)
 
 ClinicalData <- ClinicalData %>% dplyr::rename(Sequencing.ID = RNA.ID) # dplyr::rename RNA.ID column to Sequencing.ID
